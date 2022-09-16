@@ -12,3 +12,5 @@ test/outputs/
 .vscode/
 bin/
 out/
+lib/v2-core
+lib/v2-periphery
