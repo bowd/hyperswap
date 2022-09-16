@@ -37,39 +37,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@abacus-network/helloworld@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "@abacus-network/helloworld@workspace:."
-  dependencies:
-    "@abacus-network/sdk": ^0.4.1
-    "@abacus-network/utils": ^0.4.1
-    "@nomiclabs/hardhat-ethers": ^2.0.5
-    "@nomiclabs/hardhat-waffle": ^2.0.2
-    "@openzeppelin/contracts-upgradeable": ^4.6.0
-    "@trivago/prettier-plugin-sort-imports": ^3.2.0
-    "@typechain/ethers-v5": 10.0.0
-    "@typechain/hardhat": ^6.0.0
-    "@types/mocha": ^9.1.0
-    "@typescript-eslint/eslint-plugin": ^5.27.0
-    "@typescript-eslint/parser": ^5.27.0
-    chai: ^4.3.0
-    eslint: ^8.16.0
-    eslint-config-prettier: ^8.5.0
-    ethereum-waffle: ^3.4.4
-    ethers: ^5.6.8
-    hardhat: ^2.8.4
-    hardhat-gas-reporter: ^1.0.7
-    prettier: ^2.4.1
-    prettier-plugin-solidity: ^1.0.0-beta.5
-    solhint: ^3.3.2
-    solhint-plugin-prettier: ^0.0.5
-    solidity-coverage: ^0.7.14
-    ts-node: ^10.8.0
-    typechain: 8.0.0
-    typescript: ^4.7.2
-  languageName: unknown
-  linkType: soft
-
 "@abacus-network/sdk@npm:^0.4.1":
   version: 0.4.1
   resolution: "@abacus-network/sdk@npm:0.4.1"
@@ -7376,6 +7343,39 @@ __metadata:
   checksum: 9c7a74a2827f9294c009266c82031030eae811ca87b0da3dceb8d6071b9bde22c9f3daef0469c3c533cc67a97d8a167cd9fc0389350e5f415f61a79b171ded16
   languageName: node
   linkType: hard
+
+"hyperswap@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "hyperswap@workspace:."
+  dependencies:
+    "@abacus-network/sdk": ^0.4.1
+    "@abacus-network/utils": ^0.4.1
+    "@nomiclabs/hardhat-ethers": ^2.0.5
+    "@nomiclabs/hardhat-waffle": ^2.0.2
+    "@openzeppelin/contracts-upgradeable": ^4.6.0
+    "@trivago/prettier-plugin-sort-imports": ^3.2.0
+    "@typechain/ethers-v5": 10.0.0
+    "@typechain/hardhat": ^6.0.0
+    "@types/mocha": ^9.1.0
+    "@typescript-eslint/eslint-plugin": ^5.27.0
+    "@typescript-eslint/parser": ^5.27.0
+    chai: ^4.3.0
+    eslint: ^8.16.0
+    eslint-config-prettier: ^8.5.0
+    ethereum-waffle: ^3.4.4
+    ethers: ^5.6.8
+    hardhat: ^2.8.4
+    hardhat-gas-reporter: ^1.0.7
+    prettier: ^2.4.1
+    prettier-plugin-solidity: ^1.0.0-beta.5
+    solhint: ^3.3.2
+    solhint-plugin-prettier: ^0.0.5
+    solidity-coverage: ^0.7.14
+    ts-node: ^10.8.0
+    typechain: 8.0.0
+    typescript: ^4.7.2
+  languageName: unknown
+  linkType: soft
 
 "iconv-lite@npm:0.4.24, iconv-lite@npm:^0.4.24":
   version: 0.4.24

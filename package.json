@@ -1,7 +1,7 @@
 {
-  "name": "@abacus-network/helloworld",
-  "description": "A basic skeleton of an Abacus app",
-  "version": "0.5.0",
+  "name": "hyperswap",
+  "description": "Hyperswap: Cross-chain uniswap v2 built on Hyperlane",
+  "version": "0.0.1",
   "dependencies": {
     "@abacus-network/sdk": "^0.4.1",
     "@abacus-network/utils": "^0.4.1",
