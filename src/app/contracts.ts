@@ -1,11 +1,14 @@
 import { RouterContracts, RouterFactories } from '@abacus-network/sdk';
 
-import { HelloWorld, HelloWorld__factory } from '../types';
+import { 
+  HyperswapBridgeRouter,
+  HyperswapBridgeRouter__factory,
+} from '../types';
 
-export type HelloWorldFactories = RouterFactories<HelloWorld>;
+export type HyperswapFactories = RouterFactories<HyperswapBridgeRouter>;
 
-export const helloWorldFactories: HelloWorldFactories = {
-  router: new HelloWorld__factory(),
+export const helloWorldFactories: HyperswapFactories = {
+  router: new HyperswapBridgeRouter__factory()
 };
 
-export type HelloWorldContracts = RouterContracts<HelloWorld>;
+export type HyperswapContracts = RouterContracts<HyperswapBridgeRouter>;

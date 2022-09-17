@@ -16,7 +16,7 @@ import {
 
 import { HyperswapConfig } from '../deploy/config';
 import { HyperswapDeployer } from '../deploy/deploy';
-import { HyperswapRouter, HyperswapRemoteRouter } from '../types';
+import { HyperswapBridgeRouter } from '../types';
 
 describe('HelloWorld', async () => {
   const localChain = 'test1';
@@ -25,8 +25,8 @@ describe('HelloWorld', async () => {
   const remoteDomain = ChainNameToDomainId[remoteChain];
 
   let signer: SignerWithAddress;
-  let local: HyperswapRouter;
-  let remote: HyperswapRemoteRouter;
+  let local: HyperswapBridgeRouter;
+  let remote: HyperswapBridgeRouter;
   let multiProvider: MultiProvider<TestChainNames>;
   let coreApp: TestCoreApp;
   let config: ChainMap<TestChainNames, HyperswapConfig>;
@@ -48,8 +48,13 @@ describe('HelloWorld', async () => {
     const hyperswap = new HyperswapDeployer(multiProvider, config, coreApp);
     const contracts = await hyperswap.deploy();
 
-    local = contracts[localChain].HyperswapRouter;
-    remote = contracts[remoteChain].HyperswapRemoteRouter;
+    local = contracts[localChain].router;
+    remote = contracts[remoteChain].router;
+
+    expect(local).not.to.equal(null);
+    expect(remote).not.to.equal(null);
+    console.log(localDomain);
+    console.log(remoteDomain);
 
     // The all counts start empty
     // expect(await local.sent()).to.equal(0);

@@ -12,19 +12,19 @@ import {
   testChainConnectionConfigs,
 } from '@abacus-network/sdk';
 
-import { HelloWorldApp } from '../app/app';
-import { HelloWorldContracts } from '../app/contracts';
-import { HelloWorldChecker } from '../deploy/check';
-import { HelloWorldConfig } from '../deploy/config';
-import { HelloWorldDeployer } from '../deploy/deploy';
+import { HyperswapApp } from '../app/app';
+import { HyperswapContracts } from '../app/contracts';
+import { HyperswapChecker } from '../deploy/check';
+import { HyperswapConfig } from '../deploy/config';
+import { HyperswapDeployer } from '../deploy/deploy';
 
 describe('deploy', async () => {
   let multiProvider: MultiProvider<TestChainNames>;
   let core: TestCoreApp;
-  let config: ChainMap<TestChainNames, HelloWorldConfig>;
-  let deployer: HelloWorldDeployer<TestChainNames>;
-  let contracts: Record<TestChainNames, HelloWorldContracts>;
-  let app: HelloWorldApp<TestChainNames>;
+  let config: ChainMap<TestChainNames, HyperswapConfig>;
+  let deployer: HyperswapDeployer<TestChainNames>;
+  let contracts: Record<TestChainNames, HyperswapContracts>;
+  let app: HyperswapApp<TestChainNames>;
 
   before(async () => {
     const [signer] = await ethers.getSigners();
@@ -36,7 +36,7 @@ describe('deploy', async () => {
     config = core.extendWithConnectionClientConfig(
       getChainToOwnerMap(testChainConnectionConfigs, signer.address),
     );
-    deployer = new HelloWorldDeployer(multiProvider, config, core);
+    deployer = new HyperswapDeployer(multiProvider, config, core);
   });
 
   it('deploys', async () => {
@@ -45,11 +45,11 @@ describe('deploy', async () => {
 
   it('builds app', async () => {
     contracts = await deployer.deploy();
-    app = new HelloWorldApp(core, contracts, multiProvider);
+    app = new HyperswapApp(core, contracts, multiProvider);
   });
 
   it('checks', async () => {
-    const checker = new HelloWorldChecker(multiProvider, app, config);
+    const checker = new HyperswapChecker(multiProvider, app, config);
     await checker.check();
     checker.expectEmpty();
   });
