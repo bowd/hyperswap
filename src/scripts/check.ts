@@ -8,9 +8,9 @@ import {
   objMap,
 } from '@abacus-network/sdk';
 
-import { HelloWorldApp } from '../app/app';
-import { HelloWorldContracts, helloWorldFactories } from '../app/contracts';
-import { HelloWorldChecker } from '../deploy/check';
+import { HyperswapApp } from '../app/app';
+import { HyperswapContracts, hyperswapFactories } from '../app/contracts';
+import { HyperswapChecker } from '../deploy/check';
 import { prodConfigs } from '../deploy/config';
 
 // COPY FROM OUTPUT OF DEPLOYMENT SCRIPT OR IMPORT FROM ELSEWHERE
@@ -30,19 +30,19 @@ async function check() {
 
   const contractsMap = buildContracts(
     deploymentAddresses,
-    helloWorldFactories,
-  ) as ChainMap<ChainName, HelloWorldContracts>;
+    hyperswapFactories,
+  ) as ChainMap<ChainName, HyperswapContracts>;
 
   const core = AbacusCore.fromEnvironment('testnet2', multiProvider);
-  const app = new HelloWorldApp(core, contractsMap, multiProvider);
+  const app = new HyperswapApp(core, contractsMap, multiProvider);
   const config = core.extendWithConnectionClientConfig(
     getChainToOwnerMap(prodConfigs, ownerAddress),
   );
 
   console.info('Starting check');
-  const helloWorldChecker = new HelloWorldChecker(multiProvider, app, config);
-  await helloWorldChecker.check();
-  helloWorldChecker.expectEmpty();
+  const hyperswapChecker = new HyperswapChecker(multiProvider, app, config);
+  await hyperswapChecker.check();
+  hyperswapChecker.expectEmpty();
 }
 
 check()

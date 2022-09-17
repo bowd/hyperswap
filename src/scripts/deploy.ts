@@ -9,7 +9,7 @@ import {
 } from '@abacus-network/sdk';
 
 import { prodConfigs } from '../deploy/config';
-import { HelloWorldDeployer } from '../deploy/deploy';
+import { HyperswapDeployer } from '../deploy/deploy';
 
 async function main() {
   console.info('Getting signer');
@@ -28,7 +28,7 @@ async function main() {
     getChainToOwnerMap(prodConfigs, signer.address),
   );
 
-  const deployer = new HelloWorldDeployer(multiProvider, config, core);
+  const deployer = new HyperswapDeployer(multiProvider, config, core);
   const chainToContracts = await deployer.deploy();
   const addresses = serializeContracts(chainToContracts);
   console.info('===Contract Addresses===');

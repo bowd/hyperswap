@@ -1,10 +1,10 @@
-export { HelloWorldChecker } from './deploy/check';
-export { HelloWorldConfig } from './deploy/config';
-export { HelloWorldDeployer } from './deploy/deploy';
-export { HelloWorldApp } from './app/app';
+export { HyperswapChecker } from './deploy/check';
+export { HyperswapConfig } from './deploy/config';
+export { HyperswapDeployer } from './deploy/deploy';
+export { HyperswapApp } from './app/app';
 export {
-  HelloWorldContracts,
-  HelloWorldFactories,
-  helloWorldFactories,
+  HyperswapContracts,
+  HyperswapFactories,
+  hyperswapFactories,
 } from './app/contracts';
 export * as types from './types';

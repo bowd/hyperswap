@@ -3,14 +3,16 @@ import {
   AbacusRouterDeployer,
   ChainMap,
   ChainName,
+  ChainNameToDomainId,
   MultiProvider,
 } from '@abacus-network/sdk';
 
 import {
   HyperswapContracts,
   HyperswapFactories,
-  helloWorldFactories,
+  hyperswapFactories,
 } from '../app/contracts';
+import { HyperswapCustodian, HyperswapRouter } from '../types';
 
 import { HyperswapConfig } from './config';
 
@@ -27,17 +29,36 @@ export class HyperswapDeployer<
     configMap: ChainMap<Chain, HyperswapConfig>,
     protected core: AbacusCore<Chain>,
   ) {
-    super(multiProvider, configMap, helloWorldFactories, {});
+    super(multiProvider, configMap, hyperswapFactories, {});
   }
 
   // Custom contract deployment logic can go here
   // If no custom logic is needed, call deployContract for the router
   async deployContracts(chain: Chain, config: HyperswapConfig) {
-    const router = await this.deployContract(chain, 'router', [
-      config.abacusConnectionManager,
-    ]);
+    console.log(chain);
+    console.log(config);
+    const localDomain = ChainNameToDomainId[chain]
+    const router = await this.deployContract(chain, 'router', []);
+    console.log("as1")
+    console.log(router.address)
+    const hyperswapRouter = await this.deployContract(chain, 'hyperswapRouter', [config.owner, router.address, localDomain]) as HyperswapRouter;
+    console.log("as2")
+    const hyperswapCustodian = await this.deployContract(chain, 'hyperswapCustodian', [router.address]) as HyperswapCustodian;
+    console.log("as3")
+    const signer = this.multiProvider.getChainSigner(chain);
+
+    console.log("here");
+    if (chain == "alfajores" || chain == "test1") {
+      await router.connect(signer).initialize(config.abacusConnectionManager, "0x0", hyperswapRouter.address, true);
+    } else {
+      await router.connect(signer).initialize(config.abacusConnectionManager, hyperswapCustodian.address, "0x0", false);
+    }
+
     return {
       router,
+      hyperswapCustodian,
+      hyperswapRouter
     };
+
   }
 }

@@ -13,6 +13,7 @@ import {HyperswapRouter} from "contracts/HyperswapRouter.sol";
 import {HyperswapBridgeRouter} from "contracts/HyperswapBridgeRouter.sol";
 import {HyperswapCustodian} from "contracts/HyperswapCustodian.sol";
 import {HyperswapPair} from "contracts/HyperswapPair.sol";
+import {ProxyTokenFactory} from "contracts/ProxyTokenFactory.sol";
 import {Token, HyperswapLibrary} from "contracts/libraries/HyperswapLibrary.sol";
 
 import {MockInbox} from "./utils/MockInbox.sol";
@@ -35,11 +36,12 @@ contract IntegrationTest is Test {
     MockInbox spokeInbox;
     MockOutbox spokeOutbox;
 
-    HyperswapFactory factory;
 
     HyperswapBridgeRouter hubRouter;
     HyperswapBridgeRouter spokeRouter;
 
+    HyperswapFactory factory;
+    ProxyTokenFactory proxyTokenFactory;
     HyperswapRouter router;
     HyperswapCustodian custodian;
 
@@ -77,10 +79,12 @@ contract IntegrationTest is Test {
 
         hubRouter = new HyperswapBridgeRouter();
         vm.label(address(hubRouter), "HubBridgeRouter");
-        router = new HyperswapRouter(hswapDeployer, address(hubRouter), hubACM.localDomain());
+        router = new HyperswapRouter(address(hubRouter), hubACM.localDomain());
         hubRouter.initialize(address(hubACM), address(0), address(router), true);
+        proxyTokenFactory = new ProxyTokenFactory(); 
+        factory = new HyperswapFactory(hswapDeployer, address(router), address(proxyTokenFactory));
+        router.setFactory(address(factory));
 
-        factory = HyperswapFactory(router.factory());
 
         spokeRouter = new HyperswapBridgeRouter();
         vm.label(address(spokeRouter), "SpokeBridgeRouter");

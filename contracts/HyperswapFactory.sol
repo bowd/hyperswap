@@ -4,21 +4,23 @@ pragma solidity ^0.8.13;
 import {IHyperswapFactory} from "./interfaces/IHyperswapFactory.sol";
 import {IHyperswapPair} from "./interfaces/IHyperswapPair.sol";
 import {HyperswapPair} from "./HyperswapPair.sol";
-import {AccountingERC20} from "./AccountingERC20.sol";
 import {Token, HyperswapToken, HyperswapLibrary} from "./libraries/HyperswapLibrary.sol";
+import {IProxyTokenFactory} from "./interfaces/IProxyTokenFactory.sol";
 
 contract HyperswapFactory is IHyperswapFactory {
     using HyperswapToken for Token;
     address public feeTo;
     address public feeToSetter;
     address public router;
+    address public proxyTokenFactory;
 
     mapping(bytes32 => mapping(bytes32 => address)) public pairs;
     address[] public allPairs;
 
-    constructor(address _feeToSetter, address _router) {
+    constructor(address _feeToSetter, address _router, address _proxyTokenFactory) {
         feeToSetter = _feeToSetter;
         router = _router;
+        proxyTokenFactory = _proxyTokenFactory;
     }
 
     function allPairsLength() external view returns (uint256) {
@@ -47,13 +49,11 @@ contract HyperswapFactory is IHyperswapFactory {
         allPairs.push(pair);
 
         if (token0.domainID == localDomain) {
-            AccountingERC20 accountingToken = new AccountingERC20(token1.domainID, token1.tokenAddr, pair);
-            accountingToken.transferOwnership(router);
-            IHyperswapPair(pair).initialize(token0, token1, address(accountingToken));
+            address proxyToken = IProxyTokenFactory(proxyTokenFactory).deployProxyToken(router, token1.domainID, token1.tokenAddr, pair);
+            IHyperswapPair(pair).initialize(token0, token1, proxyToken);
         } else {
-            AccountingERC20 accountingToken = new AccountingERC20(token0.domainID, token0.tokenAddr, pair);
-            accountingToken.transferOwnership(router);
-            IHyperswapPair(pair).initialize(token1, token0, address(accountingToken));
+            address proxyToken = IProxyTokenFactory(proxyTokenFactory).deployProxyToken(router, token0.domainID, token0.tokenAddr, pair);
+            IHyperswapPair(pair).initialize(token1, token0, proxyToken);
         }
 
         emit PairCreated(token0.id(), token1.id(), pair, allPairs.length);

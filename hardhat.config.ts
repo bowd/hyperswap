@@ -37,13 +37,14 @@ module.exports = {
       },
     }),
   },
-  paths: {
-    cache: './cache_hardhat'
-  },
   solidity: {
     compilers: [
       {
         version: '0.8.13',
+        optimizer: {
+          enabled: true,
+          runs: 1000,
+        },
       },
     ],
   },

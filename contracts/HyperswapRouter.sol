@@ -29,9 +29,9 @@ contract HyperswapRouter is IHyperswapRouter, Context, HyperswapConstants {
     event SequenceCreated(bytes32 indexed seqId, address indexed pair, address initiator);
     event SequenceTransitioned(bytes32 indexed seqId, uint32 indexed stage);
 
-    address public immutable factory;
     address public immutable bridgeRouter;
     uint32 public immutable localDomain;
+    address public factory;
     uint256 public nonce;
 
     mapping(bytes32 => SequenceLib.Sequence) public sequences;
@@ -79,10 +79,14 @@ contract HyperswapRouter is IHyperswapRouter, Context, HyperswapConstants {
         _;
     }
 
-    constructor(address feeToSetter, address _bridgeRouter, uint32 _localDomain) {
-        factory = address(new HyperswapFactory(feeToSetter, address(this)));
+    constructor(address _bridgeRouter, uint32 _localDomain) {
         bridgeRouter = _bridgeRouter;
         localDomain = _localDomain;
+    }
+
+    // TODO circual dependency means we can't have nive things.
+    function setFactory(address _factory) external {
+        factory = _factory;
     }
 
     receive() external payable {
