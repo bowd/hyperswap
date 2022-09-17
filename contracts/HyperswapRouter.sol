@@ -57,6 +57,13 @@ contract HyperswapRouter is IHyperswapRouter, BridgeRouter, HyperswapConstants {
         address to;
     }
 
+    struct SwapContext {
+        bool tokenInRemote;
+        uint256 amountIn;
+        uint256 amountOut;
+        address to;
+    }
+
 
     modifier ensure(uint256 deadline) {
         require(deadline >= block.timestamp, "HyperswapRouter: EXPIRED");
@@ -97,6 +104,8 @@ contract HyperswapRouter is IHyperswapRouter, BridgeRouter, HyperswapConstants {
             seq = _sequenceTransition_addLiquidity(seqId, seq);
         } else if (seq.seqType == Seq_RemoveLiquidity) {
             seq = _sequenceTransition_removeLiquidity(seqId, seq);
+        } else if (seq.seqType == Seq_Swap) {
+            seq = _sequenceTransition_swap(seqId, seq);
         } else {
             revert("SeqTransition not defined");
         }
@@ -171,7 +180,7 @@ contract HyperswapRouter is IHyperswapRouter, BridgeRouter, HyperswapConstants {
         seq = _dispatchRemoteOp(
             seqId, 
             seq, 
-            RemoteOP_EscrowFunds,
+            RemoteOP_LockFunds,
             abi.encode(TokenTransferOp(tokenRemote.tokenAddr, seq.initiator, context.amountRemoteDesired)),
             tokenRemote.domainID
         );
@@ -206,7 +215,7 @@ contract HyperswapRouter is IHyperswapRouter, BridgeRouter, HyperswapConstants {
             seq = _dispatchRemoteOp(
                 seqId,
                 seq,
-                RemoteOP_EscrowFunds,
+                RemoteOP_ReleaseFunds,
                 abi.encode(TokenTransferOp(tokenRemote.tokenAddr, seq.initiator, tokenRemoteProxy.balanceOf(seq.initiator))),
                 tokenRemote.domainID
             );
@@ -348,8 +357,6 @@ contract HyperswapRouter is IHyperswapRouter, BridgeRouter, HyperswapConstants {
 
     function removeLiquidity_stage1(bytes32 seqId, SequenceLib.Sequence memory seq) internal returns (SequenceLib.Sequence memory) {
         RemoveLiquidityContext memory context = abi.decode(seq.context, (RemoveLiquidityContext));
-        console.log(context.lpTokens);
-        // Token memory tokenLocal =  IHyperswapPair(seq.pair).getTokenLocal();
         Token memory tokenRemote =  IHyperswapPair(seq.pair).getTokenRemote();
         IERC20 tokenRemoteProxy = IERC20(IHyperswapPair(seq.pair).tokenRemoteProxy());
 
@@ -363,7 +370,7 @@ contract HyperswapRouter is IHyperswapRouter, BridgeRouter, HyperswapConstants {
         seq = _dispatchRemoteOp(
             seqId, 
             seq, 
-            RemoteOP_Withdraw,
+            RemoteOP_ReleaseFunds,
             abi.encode(TokenTransferOp(tokenRemote.tokenAddr, seq.initiator, tokenRemoteProxy.balanceOf(context.to))),
             tokenRemote.domainID
         );
@@ -404,17 +411,98 @@ contract HyperswapRouter is IHyperswapRouter, BridgeRouter, HyperswapConstants {
     }
 
     // **** SWAP ****
-    // requires the initial amount to have already been sent to the first pair
-    function _swap(uint256[] memory amounts, Token[] memory path, address _to) internal virtual {
+    function _swap(uint256[] memory amounts, Token[] memory path, address _to) internal virtual returns (bytes32 seqId) {
         // XXX: Currently support only 1:1 token swaps, no routing, path.length is always 2
-
-        (Token memory input, Token memory output) = (path[0], path[1]);
-        (Token memory token0,) = HyperswapLibrary.sortTokens(input, output);
-        uint256 amountOut = amounts[1];
-        (uint256 amount0Out, uint256 amount1Out) = input.eq(token0) ? (uint(0), amountOut) : (amountOut, uint(0));
-        IHyperswapPair(HyperswapLibrary.pairFor(factory, input, output)).swap(
-            amount0Out, amount1Out, _to, new bytes(0)
+        address pair = IHyperswapFactory(factory).getPair(path[0], path[1]);
+        SequenceLib.Sequence memory seq;
+        (seqId, seq) = _createSequence(
+            pair,
+            Seq_Swap,
+            abi.encode(
+                SwapContext(
+                    !isLocal(path[0]),
+                    amounts[0],
+                    amounts[1],
+                    _to
+                )
+            )
         );
+
+        seq = _sequenceTransition_swap(seqId, seq);
+        sequences[seqId] = seq; 
+
+        // TransferHelper.safeTransferFrom(
+        //     path[0].tokenAddr, msg.sender, HyperswapLibrary.pairFor(factory, path[0], path[1]), amounts[0]
+        // );
+        /// (Token memory input, Token memory output) = (path[0], path[1]);
+        /// (Token memory token0,) = HyperswapLibrary.sortTokens(input, output);
+        /// uint256 amountOut = amounts[1];
+        /// uint256 amountIn
+        /// (uint256 amount0Out, uint256 amount1Out) = input.eq(token0) ? (uint(0), amountOut) : (amountOut, uint(0));
+        /// IHyperswapPair(HyperswapLibrary.pairFor(factory, input, output)).swap(
+        ///     amount0Out, amount1Out, _to, new bytes(0)
+        /// );
+    }
+
+    function _sequenceTransition_swap(bytes32 seqId, SequenceLib.Sequence memory seq) internal returns (SequenceLib.Sequence memory){
+        if (!seq.canTransition()) return seq;
+        if (seq.stage == 1) {
+            seq = swap_stage1(seqId, seq);
+        } else if (seq.stage == 2) {
+            seq = swap_stage2(seqId, seq);
+        }
+        return seq;
+    }
+
+    function swap_stage1(bytes32 seqId, SequenceLib.Sequence memory seq) internal returns (SequenceLib.Sequence memory) {
+        SwapContext memory context = abi.decode(seq.context, (SwapContext));
+        Token memory tokenLocal =  IHyperswapPair(seq.pair).getTokenLocal();
+        Token memory tokenRemote =  IHyperswapPair(seq.pair).getTokenRemote();
+        IERC20 tokenRemoteProxy = IERC20(IHyperswapPair(seq.pair).tokenRemoteProxy());
+
+        if (context.tokenInRemote) {
+            seq = _dispatchRemoteOp(
+                seqId, 
+                seq, 
+                RemoteOP_LockFunds,
+                abi.encode(TokenTransferOp(tokenRemote.tokenAddr, seq.initiator, context.amountIn)),
+                tokenRemote.domainID
+            );
+        } else {
+            TransferHelper.safeTransferFrom(
+                tokenLocal.tokenAddr, msg.sender, seq.pair, context.amountIn
+            );
+            IHyperswapPair(seq.pair).swap(
+                0, context.amountOut, context.to, new bytes(0)
+            );
+            seq = _dispatchRemoteOp(
+                seqId, 
+                seq, 
+                RemoteOP_ReleaseFunds,
+                abi.encode(TokenTransferOp(tokenRemote.tokenAddr, seq.initiator, tokenRemoteProxy.balanceOf(context.to))),
+                tokenRemote.domainID
+            );
+        }
+
+        seq.queuedStage = 2;
+        return seq;
+    }
+
+    function swap_stage2(bytes32 seqId, SequenceLib.Sequence memory seq) internal returns (SequenceLib.Sequence memory) {
+        SwapContext memory context = abi.decode(seq.context, (SwapContext));
+        IERC20 tokenRemoteProxy = IERC20(IHyperswapPair(seq.pair).tokenRemoteProxy());
+
+        if (context.tokenInRemote) {
+            tokenRemoteProxy.mint(seq.pair, context.amountIn);
+            IHyperswapPair(seq.pair).swap(
+                context.amountOut, 0, context.to, new bytes(0)
+            );
+        } else {
+            tokenRemoteProxy.burn(context.to, context.amountOut);
+        }
+
+        // Sequence ends here.
+        return seq;
     }
 
     function swapExactTokensForTokens(
@@ -423,15 +511,12 @@ contract HyperswapRouter is IHyperswapRouter, BridgeRouter, HyperswapConstants {
         Token[] calldata path,
         address to,
         uint256 deadline
-    ) external virtual override ensure(deadline) returns (uint256[] memory amounts) {
+    ) external virtual override ensure(deadline) returns (bytes32 seqId) {
         // XXX: Currently support only 1:1 token swaps, no routing
         require(path.length == 2, "only supports 1:1 swaps");
-        amounts = HyperswapLibrary.getAmountsOut(factory, amountIn, path);
+        uint256[] memory amounts = HyperswapLibrary.getAmountsOut(factory, amountIn, path);
         require(amounts[amounts.length - 1] >= amountOutMin, "HyperswapRouter: INSUFFICIENT_OUTPUT_AMOUNT");
-        TransferHelper.safeTransferFrom(
-            path[0].tokenAddr, msg.sender, HyperswapLibrary.pairFor(factory, path[0], path[1]), amounts[0]
-        );
-        _swap(amounts, path, to);
+        return _swap(amounts, path, to);
     }
 
     function swapTokensForExactTokens(
@@ -440,54 +525,23 @@ contract HyperswapRouter is IHyperswapRouter, BridgeRouter, HyperswapConstants {
         Token[] calldata path,
         address to,
         uint256 deadline
-    ) external virtual override ensure(deadline) returns (uint256[] memory amounts) {
+    ) external virtual override ensure(deadline) returns (bytes32 seqId) {
         // XXX: Currently support only 1:1 token swaps, no routing
         require(path.length == 2, "only supports 1:1 swaps");
-        amounts = HyperswapLibrary.getAmountsIn(factory, amountOut, path);
+        uint256[] memory amounts = HyperswapLibrary.getAmountsIn(factory, amountOut, path);
         require(amounts[0] <= amountInMax, "HyperswapRouter: EXCESSIVE_INPUT_AMOUNT");
-        TransferHelper.safeTransferFrom(
-            path[0].tokenAddr, msg.sender, HyperswapLibrary.pairFor(factory, path[0], path[1]), amounts[0]
-        );
-        _swap(amounts, path, to);
+        return _swap(amounts, path, to);
     }
 
-    // **** SWAP (supporting fee-on-transfer tokens) ****
-    // requires the initial amount to have already been sent to the first pair
-    // function _swapSupportingFeeOnTransferTokens(Token[] memory path, address _to) internal virtual {
-    //     for (uint256 i; i < path.length - 1; i++) {
-    //         (Token memory input, Token memory output) = (path[i], path[i + 1]);
-    //         (Token memory token0,) = HyperswapLibrary.sortTokens(input, output);
-    //         IHyperswapPair pair = IHyperswapPair(HyperswapLibrary.pairFor(factory, input, output));
-    //         uint256 amountInput;
-    //         uint256 amountOutput;
-    //         { // scope to avoid stack too deep errors
-    //         (uint256 reserve0, uint256 reserve1,) = pair.getReserves();
-    //         (uint256 reserveInput, uint256 reserveOutput) = input.eq(token0) ? (reserve0, reserve1) : (reserve1, reserve0);
-    //         amountInput = IERC20(input.tokenAddr).balanceOf(address(pair)) - reserveInput;
-    //         amountOutput = HyperswapLibrary.getAmountOut(amountInput, reserveInput, reserveOutput);
-    //         }
-    //         (uint256 amount0Out, uint256 amount1Out) = input.eq(token0) ? (uint(0), amountOutput) : (amountOutput, uint(0));
-    //         address to = i < path.length - 2 ? HyperswapLibrary.pairFor(factory, output, path[i + 2]) : _to;
-    //         pair.swap(amount0Out, amount1Out, to, new bytes(0));
-    //     }
-    // }
-    // function swapExactTokensForTokensSupportingFeeOnTransferTokens(
-    //     uint256 amountIn,
-    //     uint256 amountOutMin,
-    //     Token[] calldata path,
-    //     address to,
-    //     uint256 deadline
-    // ) external virtual override ensure(deadline) {
-    //     TransferHelper.safeTransferFrom(
-    //         path[0].tokenAddr, msg.sender, HyperswapLibrary.pairFor(factory, path[0], path[1]), amountIn
-    //     );
-    //     uint256 balanceBefore = IERC20(path[path.length - 1].tokenAddr).balanceOf(to);
-    //     _swapSupportingFeeOnTransferTokens(path, to);
-    //     require(
-    //         IERC20(path[path.length - 1].tokenAddr).balanceOf(to) - balanceBefore >= amountOutMin,
-    //         "HyperswapRouter: INSUFFICIENT_OUTPUT_AMOUNT"
-    //     );
-    // }
+    function createSequence_swap(
+        address pair,
+        bool tokenInRemote,
+        uint256 amountIn,
+        uint256 amountOut,
+        address to
+    ) internal returns (bytes32 seqId, SequenceLib.Sequence memory seq) {
+    }
+
 
     // **** LIBRARY FUNCTIONS ****
 

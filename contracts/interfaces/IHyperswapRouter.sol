@@ -41,14 +41,14 @@ interface IHyperswapRouter {
         Token[] calldata path,
         address to,
         uint256 deadline
-    ) external returns (uint256[] memory amounts);
+    ) external returns (bytes32 seqId);
     function swapTokensForExactTokens(
         uint256 amountOut,
         uint256 amountInMax,
         Token[] calldata path,
         address to,
         uint256 deadline
-    ) external returns (uint256[] memory amounts);
+    ) external returns (bytes32 seqId);
 
     function quote(uint256 amountA, uint256 reserveA, uint256 reserveB) external view returns (uint256 amountB);
     function getAmountOut(uint256 amountIn, uint256 reserveIn, uint256 reserveOut) external view returns (uint256 amountOut);

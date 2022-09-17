@@ -136,6 +136,27 @@ contract IntegrationTest is Test {
 
         IHyperswapPair(pair).approve(address(router), lpTokens);
 
+        token0.approve(address(router), 1e20);
+
+        Token[] memory path = new Token[](2);
+        path[0] = tt0;
+        path[1] = tt1;
+
+        router.swapExactTokensForTokens(1e20, 0, path, user, block.timestamp + 1000);
+
+        remoteInbox.processNextPendingMessage();
+        hostInbox.processNextPendingMessage();
+
+        token1.approve(address(remoteRouter), 1e19);
+
+        path[0] = tt1;
+        path[1] = tt0;
+
+        router.swapExactTokensForTokens(1e19, 0, path, user, block.timestamp + 1000);
+
+        remoteInbox.processNextPendingMessage();
+        hostInbox.processNextPendingMessage();
+
         router.removeLiquidity(
             tt0,
             tt1,
@@ -145,8 +166,6 @@ contract IntegrationTest is Test {
             user,
             block.timestamp + 1000
         );
-
-
 
         remoteInbox.processNextPendingMessage();
         hostInbox.processNextPendingMessage();

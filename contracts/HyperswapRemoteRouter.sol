@@ -40,14 +40,14 @@ contract HyperswapRemoteRouter is BridgeRouter, HyperswapConstants {
     }
 
     function _execute(SequenceLib.RemoteOperation memory op) internal returns (bool) {
-        if (op.remoteOpType == RemoteOP_EscrowFunds) {
+        if (op.remoteOpType == RemoteOP_LockFunds) {
             TokenTransferOp memory payload = abi.decode(op.payload, (TokenTransferOp));
             try IERC20(payload.token).transferFrom(payload.user, address(this), payload.amount) returns (bool) {
                 return true;
             } catch {
                 return false;
             } 
-        } else if (op.remoteOpType == RemoteOP_ReleaseDifference || op.remoteOpType == RemoteOP_Withdraw) {
+        } else if (op.remoteOpType == RemoteOP_ReleaseFunds) {
             TokenTransferOp memory payload = abi.decode(op.payload, (TokenTransferOp));
             try IERC20(payload.token).transfer(payload.user, payload.amount) returns (bool) {
                 return true;
