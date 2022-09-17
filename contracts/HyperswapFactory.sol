@@ -4,18 +4,21 @@ pragma solidity ^0.8.13;
 import {IHyperswapFactory} from "./interfaces/IHyperswapFactory.sol";
 import {IHyperswapPair} from "./interfaces/IHyperswapPair.sol";
 import {HyperswapPair} from "./HyperswapPair.sol";
+import {AccountingERC20} from "./AccountingERC20.sol";
 import {Token, HyperswapToken, HyperswapLibrary} from "./libraries/HyperswapLibrary.sol";
 
 contract HyperswapFactory is IHyperswapFactory {
     using HyperswapToken for Token;
     address public feeTo;
     address public feeToSetter;
+    address public router;
 
     mapping(bytes32 => mapping(bytes32 => address)) public pairs;
     address[] public allPairs;
 
-    constructor(address _feeToSetter) {
+    constructor(address _feeToSetter, address _router) {
         feeToSetter = _feeToSetter;
+        router = _router;
     }
 
     function allPairsLength() external view returns (uint256) {
@@ -26,7 +29,8 @@ contract HyperswapFactory is IHyperswapFactory {
         return pairs[tokenA.id()][tokenB.id()];
     }
 
-    function createPair(Token calldata tokenA, Token calldata tokenB) external returns (address pair) {
+    // TODO: should be only router
+    function createPair(Token calldata tokenA, Token calldata tokenB, uint32 localDomain) external returns (address pair) {
         require(!tokenA.eq(tokenB), "Hyperswap: IDENTICAL_TOKENS");
         (Token memory token0, Token memory token1) = tokenA.lt(tokenB) ? (tokenA, tokenB) : (tokenB, tokenA);
         require(token0.tokenAddr != address(0), "Hyperswap: ZERO_ADDRESS");
@@ -37,11 +41,21 @@ contract HyperswapFactory is IHyperswapFactory {
         assembly {
             pair := create2(0, add(bytecode, 32), mload(bytecode), salt)
         }
-        IHyperswapPair(pair).initialize(token0, token1);
+
         pairs[token0.id()][token1.id()] = pair;
         pairs[token1.id()][token0.id()] = pair;
-
         allPairs.push(pair);
+
+        if (token0.domainID == localDomain) {
+            AccountingERC20 accountingToken = new AccountingERC20(token1.domainID, token1.tokenAddr);
+            accountingToken.transferOwnership(router);
+            IHyperswapPair(pair).initialize(token0, token1, address(accountingToken));
+        } else {
+            AccountingERC20 accountingToken = new AccountingERC20(token0.domainID, token0.tokenAddr);
+            accountingToken.transferOwnership(router);
+            IHyperswapPair(pair).initialize(token1, token0, address(accountingToken));
+        }
+
         emit PairCreated(token0.id(), token1.id(), pair, allPairs.length);
     }
 

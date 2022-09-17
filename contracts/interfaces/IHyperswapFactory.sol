@@ -13,7 +13,7 @@ interface IHyperswapFactory {
     function allPairs(uint256) external view returns (address pair);
     function allPairsLength() external view returns (uint256);
 
-    function createPair(Token calldata tokenA, Token calldata tokenB) external returns (address pair);
+    function createPair(Token calldata tokenA, Token calldata tokenB, uint32 localDomain) external returns (address pair);
 
     function setFeeTo(address) external;
     function setFeeToSetter(address) external;

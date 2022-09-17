@@ -19,11 +19,12 @@ interface IHyperswapPair is IHyperswapERC20 {
 
     function MINIMUM_LIQUIDITY() external pure returns (uint);
     function factory() external view returns (address);
-    function getToken0() external view returns (Token memory);
-    function getToken1() external view returns (Token memory);
+    function getTokenLocal() external view returns (Token memory);
+    function getTokenRemote() external view returns (Token memory);
+    function tokenRemoteProxy() external view returns (address);
     function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast);
-    function price0CumulativeLast() external view returns (uint);
-    function price1CumulativeLast() external view returns (uint);
+    function priceLocalCumulativeLast() external view returns (uint);
+    function priceRemoteCumulativeLast() external view returns (uint);
     function kLast() external view returns (uint);
 
     function mint(address to) external returns (uint256 liquidity);
@@ -32,5 +33,5 @@ interface IHyperswapPair is IHyperswapERC20 {
     function skim(address to) external;
     function sync() external;
 
-    function initialize(Token calldata token0, Token calldata token1) external;
+    function initialize(Token calldata tokenLocal, Token calldata tokenRemote, address tokenRemoteProxy) external;
 }
