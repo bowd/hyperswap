@@ -47,11 +47,11 @@ contract HyperswapFactory is IHyperswapFactory {
         allPairs.push(pair);
 
         if (token0.domainID == localDomain) {
-            AccountingERC20 accountingToken = new AccountingERC20(token1.domainID, token1.tokenAddr);
+            AccountingERC20 accountingToken = new AccountingERC20(token1.domainID, token1.tokenAddr, pair);
             accountingToken.transferOwnership(router);
             IHyperswapPair(pair).initialize(token0, token1, address(accountingToken));
         } else {
-            AccountingERC20 accountingToken = new AccountingERC20(token0.domainID, token0.tokenAddr);
+            AccountingERC20 accountingToken = new AccountingERC20(token0.domainID, token0.tokenAddr, pair);
             accountingToken.transferOwnership(router);
             IHyperswapPair(pair).initialize(token1, token0, address(accountingToken));
         }

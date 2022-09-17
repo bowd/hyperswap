@@ -11,5 +11,6 @@ remappings = [
     'hardhat/=node_modules/hardhat/',
     'prettier-plugin-solidity/=node_modules/prettier-plugin-solidity/',
 ]
+# via-ir = true
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config

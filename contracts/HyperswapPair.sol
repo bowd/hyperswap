@@ -137,28 +137,28 @@ contract HyperswapPair is IHyperswapPair, HyperswapERC20 {
     }
 
     // this low-level function should be called from a contract which performs important safety checks
-    function burn(address to) external lock returns (uint256 amount0, uint256 amount1) {
+    function burn(address to) external lock returns (uint256 amountRemote, uint256 amountLocal) {
         (uint112 _reserveLocal, uint112 _reserveRemote,) = getReserves(); // gas savings
         address _tokenLocal = tokenLocal.tokenAddr;                      // gas savings
-        address _tokenRemote = tokenRemote.tokenAddr;                      // gas savings
+        address _tokenRemote = tokenRemoteProxy;
         uint256 balanceLocal = IERC20(_tokenLocal).balanceOf(address(this));
         uint256 balanceRemote = IERC20(_tokenRemote).balanceOf(address(this));
         uint256 liquidity = balanceOf[address(this)];
 
         bool feeOn = _mintFee(_reserveLocal, _reserveRemote);
         uint256 _totalSupply = totalSupply; // gas savings, must be defined here since totalSupply can update in _mintFee
-        amount0 = (liquidity * balanceLocal) / _totalSupply; // using balances ensures pro-rata distribution
-        amount1 = (liquidity * balanceRemote) / _totalSupply; // using balances ensures pro-rata distribution
-        require(amount0 > 0 && amount1 > 0, "Hyperswap: INSUFFICIENT_LIQUIDITY_BURNED");
+        amountLocal = (liquidity * balanceLocal) / _totalSupply; // using balances ensures pro-rata distribution
+        amountRemote = (liquidity * balanceRemote) / _totalSupply; // using balances ensures pro-rata distribution
+        require(amountLocal > 0 && amountRemote > 0, "Hyperswap: INSUFFICIENT_LIQUIDITY_BURNED");
         _burn(address(this), liquidity);
-        _safeTransfer(_tokenLocal, to, amount0);
-        _safeTransfer(_tokenRemote, to, amount1);
+        _safeTransfer(_tokenLocal, to, amountLocal);
+        _safeTransfer(_tokenRemote, to, amountRemote);
         balanceLocal = IERC20(_tokenLocal).balanceOf(address(this));
         balanceRemote = IERC20(_tokenRemote).balanceOf(address(this));
 
         _update(balanceLocal, balanceRemote, _reserveLocal, _reserveRemote);
         if (feeOn) kLast = uint(reserveLocal) * reserveRemote; // reserveLocal and reserveRemote are up-to-date
-        emit Burn(msg.sender, amount0, amount1, to);
+        emit Burn(msg.sender, amountLocal, amountRemote, to);
     }
 
     // this low-level function should be called from a contract which performs important safety checks
@@ -171,7 +171,7 @@ contract HyperswapPair is IHyperswapPair, HyperswapERC20 {
         uint256 balanceRemote;
         { // scope for _token{0,1}, avoids stack too deep errors
         address _tokenLocal = tokenLocal.tokenAddr;
-        address _tokenRemote = tokenRemote.tokenAddr;
+        address _tokenRemote = tokenRemoteProxy;
         require(to != _tokenLocal && to != _tokenRemote, "Hyperswap: INVALID_TO");
         if (amount0Out > 0) _safeTransfer(_tokenLocal, to, amount0Out); // optimistically transfer tokens
         if (amount1Out > 0) _safeTransfer(_tokenRemote, to, amount1Out); // optimistically transfer tokens

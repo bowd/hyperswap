@@ -15,7 +15,7 @@ interface IHyperswapRouter {
         uint256 amountBMin,
         address to,
         uint256 deadline
-    ) external returns (bytes32 xopId);
+    ) external returns (bytes32 seqId);
     function removeLiquidity(
         Token calldata tokenA,
         Token calldata tokenB,
@@ -24,7 +24,7 @@ interface IHyperswapRouter {
         uint256 amountBMin,
         address to,
         uint256 deadline
-    ) external returns (uint256 amountA, uint256 amountB);
+    ) external returns (bytes32 seqId);
     function removeLiquidityWithPermit(
         Token calldata tokenA,
         Token calldata tokenB,
@@ -34,7 +34,7 @@ interface IHyperswapRouter {
         address to,
         uint256 deadline,
         bool approveMax, uint8 v, bytes32 r, bytes32 s
-    ) external returns (uint256 amountA, uint256 amountB);
+    ) external returns (bytes32 seqId);
     function swapExactTokensForTokens(
         uint256 amountIn,
         uint256 amountOutMin,

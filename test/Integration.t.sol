@@ -6,6 +6,8 @@ import {Test, console2 as console} from "forge-std/Test.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {AbacusConnectionManager} from "@abacus-network/core/contracts/AbacusConnectionManager.sol";
 
+import {IHyperswapPair} from "contracts/interfaces/IHyperswapPair.sol";
+
 import {HyperswapFactory} from "contracts/HyperswapFactory.sol";
 import {HyperswapRouter} from "contracts/HyperswapRouter.sol";
 import {HyperswapRemoteRouter} from "contracts/HyperswapRemoteRouter.sol";
@@ -43,6 +45,7 @@ contract IntegrationTest is Test {
         abcDeployer = vm.addr(0xff - 1);
         hswapDeployer = vm.addr(0xff - 2);
         user = vm.addr(0xff - 3);
+        vm.label(user, "user");
 
         changePrank(abcDeployer);
         remoteInbox = new MockInbox(RemoteChainDomain);
@@ -70,6 +73,8 @@ contract IntegrationTest is Test {
         // factory = new HyperswapFactory(hswapDeployer);
         router = new HyperswapRouter(hswapDeployer);
         router.initialize(address(hostACM));
+
+        factory = HyperswapFactory(router.factory());
 
         remoteRouter = new HyperswapRemoteRouter();
         remoteRouter.initialize(address(remoteACM));
@@ -120,6 +125,28 @@ contract IntegrationTest is Test {
             user,
             block.timestamp + 1000
         );
+
+        remoteInbox.processNextPendingMessage();
+        hostInbox.processNextPendingMessage();
+
+        address pair = factory.getPair(tt0, tt1);
+        vm.label(IHyperswapPair(pair).tokenRemoteProxy(), "TK1Proxy");
+        uint256 lpTokens = IHyperswapPair(pair).balanceOf(user);
+        console.log(lpTokens);
+
+        IHyperswapPair(pair).approve(address(router), lpTokens);
+
+        router.removeLiquidity(
+            tt0,
+            tt1,
+            lpTokens,
+            0,
+            0,
+            user,
+            block.timestamp + 1000
+        );
+
+
 
         remoteInbox.processNextPendingMessage();
         hostInbox.processNextPendingMessage();

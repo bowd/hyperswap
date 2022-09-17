@@ -7,13 +7,21 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 contract AccountingERC20 is ERC20, Ownable {
     uint32 public tokenDomainID;
     address public tokenAddress;
+    address public pair;
 
-    constructor(uint32 _tokenDomainID, address _tokenAddress) ERC20("ProxyToken", "PT") Ownable() {
-        _tokenDomainID = _tokenDomainID;
-        _tokenAddress = _tokenAddress;
+    modifier onlyOwnerOrPair() {
+        require(pair == _msgSender() || owner() == _msgSender(), "AccountERC20: Only owner or pair can transfer");
+        _;
     }
 
-    function transfer(address to, uint256 amount) public virtual override onlyOwner returns (bool) {
+    constructor(uint32 _tokenDomainID, address _tokenAddress, address _pair) ERC20("ProxyToken", "PT") Ownable() {
+        tokenDomainID = _tokenDomainID;
+        tokenAddress = _tokenAddress;
+        pair = _pair;
+
+    }
+
+    function transfer(address to, uint256 amount) public virtual override onlyOwnerOrPair returns (bool) {
         return super.transfer(to, amount);
     }
 

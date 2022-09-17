@@ -5,13 +5,12 @@ import {console2 as console} from "forge-std/Test.sol";
 import {Router as BridgeRouter} from "@abacus-network/app/contracts/Router.sol";
 import {IERC20} from "./interfaces/IERC20.sol";
 
-contract HyperswapRemoteRouter is BridgeRouter {
-    event OpSuccess(bytes32 indexed xopID, uint8 indexed opType, bytes opData);
-    event OpFailed(bytes32 indexed xopID, uint8 indexed opType, bytes opData);
+import {SequenceLib} from "./libraries/SequenceLib.sol";
+import {HyperswapConstants} from "./HyperswapConstants.sol";
 
-    uint8 constant OP_EscrowFunds = 0x22;
-    uint8 constant OP_ReleaseDifference = 0x23;
-    uint8 constant OP_Withdraw = 0x24;
+contract HyperswapRemoteRouter is BridgeRouter, HyperswapConstants {
+    event OpSuccess(bytes32 indexed seqId, uint256 opIndex, uint8 indexed opType, bytes payload);
+    event OpFailed(bytes32 indexed seqId, uint256 opIndex, uint8 indexed opType, bytes payload);
 
     struct TokenTransferOp {
         address token;
@@ -28,29 +27,29 @@ contract HyperswapRemoteRouter is BridgeRouter {
         bytes32,
         bytes memory message
     ) internal override {
-        (bytes32 xopID, uint8 opType, bytes memory opData) = abi.decode(message, (bytes32, uint8, bytes));
-        bool success = _execute(opType, opData);
+        (bytes32 seqId, uint256 opIndex, SequenceLib.RemoteOperation memory op) = abi.decode(message, (bytes32, uint256, SequenceLib.RemoteOperation));
+        bool success = _execute(op);
 
         if (success) {
-            emit OpSuccess(xopID, opType, opData);
+            emit OpSuccess(seqId, opIndex, op.remoteOpType, op.payload);
         } else {
-            emit OpFailed(xopID, opType, opData);
+            emit OpFailed(seqId, opIndex, op.remoteOpType, op.payload);
         }
 
-        _dispatch(domain, abi.encode(xopID, opType, success, opData));
+        _dispatch(domain, abi.encode(seqId, opIndex, success));
     }
 
-    function _execute(uint8 opType, bytes memory opData) internal returns (bool) {
-        if (opType == OP_EscrowFunds) {
-            TokenTransferOp memory op = abi.decode(opData, (TokenTransferOp));
-            try IERC20(op.token).transferFrom(op.user, address(this), op.amount) returns (bool) {
+    function _execute(SequenceLib.RemoteOperation memory op) internal returns (bool) {
+        if (op.remoteOpType == RemoteOP_EscrowFunds) {
+            TokenTransferOp memory payload = abi.decode(op.payload, (TokenTransferOp));
+            try IERC20(payload.token).transferFrom(payload.user, address(this), payload.amount) returns (bool) {
                 return true;
             } catch {
                 return false;
             } 
-        } else if (opType == OP_ReleaseDifference || opType == OP_Withdraw) {
-            TokenTransferOp memory op = abi.decode(opData, (TokenTransferOp));
-            try IERC20(op.token).transfer(op.user, op.amount) returns (bool) {
+        } else if (op.remoteOpType == RemoteOP_ReleaseDifference || op.remoteOpType == RemoteOP_Withdraw) {
+            TokenTransferOp memory payload = abi.decode(op.payload, (TokenTransferOp));
+            try IERC20(payload.token).transfer(payload.user, payload.amount) returns (bool) {
                 return true;
             } catch {
                 return false;
