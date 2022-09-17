@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.13;
 
+import {console2 as console} from "forge-std/Test.sol";
+
 import {IHyperswapPair} from "../interfaces/IHyperswapPair.sol";
 
 library HyperswapLibrary {
@@ -19,13 +21,14 @@ library HyperswapLibrary {
                 hex"ff",
                 factory,
                 keccak256(abi.encodePacked(token0, token1)),
-                hex"96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f" // init code hash
+                hex"a8aa07b463f557e577c78b16e48ab4b9b7942247de81242aafb448bb26b4b90e" // init code hash
             )))));
     }
 
     // fetches and sorts the reserves for a pair
     function getReserves(address factory, address tokenA, address tokenB) internal view returns (uint reserveA, uint reserveB) {
         (address token0,) = sortTokens(tokenA, tokenB);
+        console.log(pairFor(factory, tokenA, tokenB));
         (uint reserve0, uint reserve1,) = IHyperswapPair(pairFor(factory, tokenA, tokenB)).getReserves();
         (reserveA, reserveB) = tokenA == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
     }
