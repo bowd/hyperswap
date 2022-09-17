@@ -6,7 +6,7 @@ import {console2 as console} from "forge-std/Test.sol";
 import {HyperswapFactory} from "contracts/HyperswapFactory.sol";
 import {HyperswapRouter} from "contracts/HyperswapRouter.sol";
 import {HyperswapPair} from "contracts/HyperswapPair.sol";
-import {HyperswapLibrary} from "contracts/libraries/HyperswapLibrary.sol";
+import {Token, HyperswapLibrary} from "contracts/libraries/HyperswapLibrary.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract SanityCheckTest is Test {
@@ -43,9 +43,18 @@ contract SanityCheckTest is Test {
         token0.approve(address(router), 1e22);
         token1.approve(address(router), 9e21);
 
+        Token memory tt0 = Token({
+            domainID: 1111,
+            tokenAddr: address(token0)
+        });
+        Token memory tt1 = Token({
+            domainID: 1111,
+            tokenAddr: address(token1)
+        });
+
         router.addLiquidity(
-            address(token0),
-            address(token1),
+            tt0,
+            tt1,
             1e22,
             9e21,
             1e22,
@@ -54,16 +63,16 @@ contract SanityCheckTest is Test {
             block.timestamp + 1000
         );
 
-        (uint256 reserve0, uint256 reserve1) = HyperswapLibrary.getReserves(address(factory), address(token0), address(token1));
+        // (uint256 reserve0, uint256 reserve1) = HyperswapLibrary.getReserves(address(factory), tt0, tt1);
 
 
         uint256 amount0 = 1e20;
         token0.approve(address(router), amount0);
         // uint256 amount1 = router.quote(amount0, reserve0, reserve1);
 
-        address[] memory path = new address[](2);
-        path[0] = address(token0);
-        path[1] = address(token1);
+        Token[] memory path = new Token[](2);
+        path[0] = tt0;
+        path[1] = tt1;
         uint[] memory amounts = router.swapExactTokensForTokens(
             amount0,
             0,

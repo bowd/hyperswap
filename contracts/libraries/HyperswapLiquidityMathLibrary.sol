@@ -6,7 +6,7 @@ import {IHyperswapFactory} from "../interfaces/IHyperswapFactory.sol";
 import {Babylonian} from "./Babylonian.sol";
 import {FullMath} from "./FullMath.sol";
 
-import {HyperswapLibrary} from "./HyperswapLibrary.sol";
+import {Token, HyperswapLibrary} from "./HyperswapLibrary.sol";
 
 // library containing some math for dealing with the liquidity shares of a pair, e.g. computing their exact value
 // in terms of the underlying tokens
@@ -40,8 +40,8 @@ library HyperswapLiquidityMathLibrary {
     // gets the reserves after an arbitrage moves the price to the profit-maximizing ratio given an externally observed true price
     function getReservesAfterArbitrage(
         address factory,
-        address tokenA,
-        address tokenB,
+        Token calldata tokenA,
+        Token calldata tokenB,
         uint256 truePriceTokenA,
         uint256 truePriceTokenB
     ) internal view returns (uint256 reserveA, uint256 reserveB) {
@@ -97,8 +97,8 @@ library HyperswapLiquidityMathLibrary {
     // #getLiquidityValueAfterArbitrageToPrice
     function getLiquidityValue(
         address factory,
-        address tokenA,
-        address tokenB,
+        Token calldata tokenA,
+        Token calldata tokenB,
         uint256 liquidityAmount
     ) internal view returns (uint256 tokenAAmount, uint256 tokenBAmount) {
         (uint256 reservesA, uint256 reservesB) = HyperswapLibrary.getReserves(factory, tokenA, tokenB);
@@ -113,8 +113,8 @@ library HyperswapLiquidityMathLibrary {
     // and a liquidity amount, returns the value of the liquidity in terms of tokenA and tokenB
     function getLiquidityValueAfterArbitrageToPrice(
         address factory,
-        address tokenA,
-        address tokenB,
+        Token calldata tokenA,
+        Token calldata tokenB,
         uint256 truePriceTokenA,
         uint256 truePriceTokenB,
         uint256 liquidityAmount
