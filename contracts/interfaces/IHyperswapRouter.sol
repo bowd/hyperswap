@@ -6,6 +6,7 @@ import {Token} from "../libraries/HyperswapLibrary.sol";
 interface IHyperswapRouter {
     function factory() external view returns (address);
 
+    function handleCustodianResponse(uint32 domain, bytes32 seqId, uint256 opIndex, bool success) external;
     function addLiquidity(
         Token calldata tokenA,
         Token calldata tokenB,

@@ -12,13 +12,13 @@ import {
   helloWorldFactories,
 } from '../app/contracts';
 
-import { HelloWorldConfig } from './config';
+import { HyperswapConfig } from './config';
 
 export class HelloWorldDeployer<
   Chain extends ChainName,
 > extends AbacusRouterDeployer<
   Chain,
-  HelloWorldConfig,
+  HyperswapConfg,
   HelloWorldContracts,
   HelloWorldFactories
 > {
@@ -33,7 +33,7 @@ export class HelloWorldDeployer<
   // Custom contract deployment logic can go here
   // If no custom logic is needed, call deployContract for the router
   async deployContracts(chain: Chain, config: HelloWorldConfig) {
-    const router = await this.deployContract(chain, 'router', [
+    const router = await this.deployContract(chain, 'HyperswapRouter', [
       config.abacusConnectionManager,
       config.interchainGasPaymaster,
     ]);

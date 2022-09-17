@@ -3,9 +3,11 @@ pragma solidity ^0.8.13;
 
 import {console2 as console} from "forge-std/Test.sol";
 import {Router as BridgeRouter} from "@abacus-network/app/contracts/Router.sol";
+import {Context} from "@openzeppelin/contracts/utils/Context.sol";
 
 import {IHyperswapFactory} from "./interfaces/IHyperswapFactory.sol";
 import {IHyperswapRouter} from "./interfaces/IHyperswapRouter.sol";
+import {IHyperswapBridgeRouter} from "./interfaces/IHyperswapBridgeRouter.sol";
 import {IHyperswapPair} from "./interfaces/IHyperswapPair.sol";
 import {IERC20} from "./interfaces/IERC20.sol";
 
@@ -16,22 +18,24 @@ import {SequenceLib} from "./libraries/SequenceLib.sol";
 import {HyperswapFactory} from "./HyperswapFactory.sol";
 import {HyperswapConstants} from "./HyperswapConstants.sol";
 
-contract HyperswapRouter is IHyperswapRouter, BridgeRouter, HyperswapConstants {
+contract HyperswapRouter is IHyperswapRouter, Context, HyperswapConstants {
     using HyperswapToken for Token;
     using SequenceLib for SequenceLib.Sequence;
 
-    event RemoteOpQueued(bytes32 indexed seqId, uint256 indexed opIndex, uint32 indexed targetDomain, uint32 opType);
-    event RemoteOpFailed(bytes32 indexed seqId, uint256 indexed opIndex, uint32 indexed targetDomain);
-    event RemoteOpSucceeded(bytes32 indexed seqId, uint256 indexed opIndex, uint32 indexed targetDomain);
+    event CustodianOpQueued(bytes32 indexed seqId, uint256 indexed opIndex, uint32 indexed targetDomain, uint32 opType);
+    event CustodianOpFailed(bytes32 indexed seqId, uint256 indexed opIndex, uint32 indexed targetDomain);
+    event CustodianOpSucceeded(bytes32 indexed seqId, uint256 indexed opIndex, uint32 indexed targetDomain);
 
     event SequenceCreated(bytes32 indexed seqId, address indexed pair, address initiator);
     event SequenceTransitioned(bytes32 indexed seqId, uint32 indexed stage);
 
     address public immutable factory;
+    address public immutable bridgeRouter;
+    uint32 public immutable localDomain;
     uint256 public nonce;
 
     mapping(bytes32 => SequenceLib.Sequence) public sequences;
-    mapping(bytes32 => SequenceLib.RemoteOperation[]) public sequenceOps;
+    mapping(bytes32 => SequenceLib.CustodianOperation[]) public sequenceOps;
 
     struct TokenTransferOp {
         address token;
@@ -70,32 +74,31 @@ contract HyperswapRouter is IHyperswapRouter, BridgeRouter, HyperswapConstants {
         _;
     }
 
-    constructor(address feeToSetter) {
-        factory = address(new HyperswapFactory(feeToSetter, address(this)));
+    modifier onlyBridgeRouter() {
+        require(_msgSender() == bridgeRouter, "not allowed");
+        _;
     }
 
-    function initialize(address _abacusConnectionManager) external initializer {
-        __Router_initialize(_abacusConnectionManager);
+    constructor(address feeToSetter, address _bridgeRouter, uint32 _localDomain) {
+        factory = address(new HyperswapFactory(feeToSetter, address(this)));
+        bridgeRouter = _bridgeRouter;
+        localDomain = _localDomain;
     }
 
     receive() external payable {
         revert("Native token transfer ignored");
     }
 
-    function _handle(
-        uint32 sourceDomain,
-        bytes32,
-        bytes memory _message
-    ) internal override {
-        (bytes32 seqId, uint256 remoteOpIndex, bool success) = abi.decode(_message, (bytes32, uint256, bool));
+    function handleCustodianResponse(uint32 domain, bytes32 seqId, uint256 opIndex, bool success) external onlyBridgeRouter {
         SequenceLib.Sequence memory seq = sequences[seqId];
-        SequenceLib.RemoteOperation memory op = sequenceOps[seqId][remoteOpIndex];
+        require(opIndex <= sequenceOps[seqId].length, "opIndex out of range");
+        SequenceLib.CustodianOperation memory op = sequenceOps[seqId][opIndex];
         uint32 stageBefore = seq.stage;
-        (seq, op) = seq.finishRemoteOp(op, success);
+        (seq, op) = seq.finishCustodianOp(op, success);
         if (success) {
-            emit RemoteOpSucceeded(seqId, remoteOpIndex, sourceDomain);
+            emit CustodianOpSucceeded(seqId, opIndex, domain);
         } else {
-            emit RemoteOpFailed(seqId, remoteOpIndex, sourceDomain);
+            emit CustodianOpFailed(seqId, opIndex, domain);
         }
         if (seq.stage != stageBefore) {
             emit SequenceTransitioned(seqId, seq.stage);
@@ -111,7 +114,7 @@ contract HyperswapRouter is IHyperswapRouter, BridgeRouter, HyperswapConstants {
         }
 
         sequences[seqId] = seq;
-        sequenceOps[seqId][remoteOpIndex] = op;
+        sequenceOps[seqId][opIndex] = op;
     }
 
 
@@ -130,7 +133,7 @@ contract HyperswapRouter is IHyperswapRouter, BridgeRouter, HyperswapConstants {
     ) external virtual override ensure(deadline) returns (bytes32 seqId) {
         address pair = IHyperswapFactory(factory).getPair(tokenA, tokenB);
         if (pair == address(0)) {
-            pair = IHyperswapFactory(factory).createPair(tokenA, tokenB, _localDomain());
+            pair = IHyperswapFactory(factory).createPair(tokenA, tokenB, localDomain);
         }
 
         SequenceLib.Sequence memory seq;
@@ -177,7 +180,7 @@ contract HyperswapRouter is IHyperswapRouter, BridgeRouter, HyperswapConstants {
         Token memory tokenRemote =  IHyperswapPair(seq.pair).getTokenRemote();
         // Escrow funds locally
         TransferHelper.safeTransferFrom(tokenLocal.tokenAddr, seq.initiator, address(this), context.amountLocalDesired);
-        seq = _dispatchRemoteOp(
+        seq = _dispatchCustodianOp(
             seqId, 
             seq, 
             RemoteOP_LockFunds,
@@ -212,7 +215,7 @@ contract HyperswapRouter is IHyperswapRouter, BridgeRouter, HyperswapConstants {
 
         TransferHelper.safeTransferFrom(address(tokenRemoteProxy), seq.initiator, seq.pair, amountRemote);
         if (tokenRemoteProxy.balanceOf(seq.initiator) > 0) {
-            seq = _dispatchRemoteOp(
+            seq = _dispatchCustodianOp(
                 seqId,
                 seq,
                 RemoteOP_ReleaseFunds,
@@ -367,7 +370,7 @@ contract HyperswapRouter is IHyperswapRouter, BridgeRouter, HyperswapConstants {
         require(amountRemote >= context.amountRemoteMin, "HyperswapRouter: INSUFFICIENT_A_AMOUNT");
         // Escrow funds locally
         // TransferHelper.safeTransferFrom(tokenLocal.tokenAddr, seq.initiator, address(this), context.amountLocalDesired);
-        seq = _dispatchRemoteOp(
+        seq = _dispatchCustodianOp(
             seqId, 
             seq, 
             RemoteOP_ReleaseFunds,
@@ -461,7 +464,7 @@ contract HyperswapRouter is IHyperswapRouter, BridgeRouter, HyperswapConstants {
         IERC20 tokenRemoteProxy = IERC20(IHyperswapPair(seq.pair).tokenRemoteProxy());
 
         if (context.tokenInRemote) {
-            seq = _dispatchRemoteOp(
+            seq = _dispatchCustodianOp(
                 seqId, 
                 seq, 
                 RemoteOP_LockFunds,
@@ -475,7 +478,7 @@ contract HyperswapRouter is IHyperswapRouter, BridgeRouter, HyperswapConstants {
             IHyperswapPair(seq.pair).swap(
                 0, context.amountOut, context.to, new bytes(0)
             );
-            seq = _dispatchRemoteOp(
+            seq = _dispatchCustodianOp(
                 seqId, 
                 seq, 
                 RemoteOP_ReleaseFunds,
@@ -551,19 +554,19 @@ contract HyperswapRouter is IHyperswapRouter, BridgeRouter, HyperswapConstants {
         emit SequenceCreated(seqId, seq.pair, seq.initiator);
     }
 
-    function _dispatchRemoteOp(bytes32 seqId, SequenceLib.Sequence memory seq, uint8 opType, bytes memory payload, uint32 targetDomain) internal returns (SequenceLib.Sequence memory) {
-        SequenceLib.RemoteOperation memory op;
-        (seq, op) = seq.addRemoteOp(opType, payload);
+    function _dispatchCustodianOp(bytes32 seqId, SequenceLib.Sequence memory seq, uint8 opType, bytes memory payload, uint32 targetDomain) internal returns (SequenceLib.Sequence memory) {
+        SequenceLib.CustodianOperation memory op;
+        (seq, op) = seq.addCustodianOp(opType, payload);
         sequenceOps[seqId].push(op);
         uint256 opIndex = sequenceOps[seqId].length - 1;
-        emit RemoteOpQueued(seqId, opIndex, targetDomain, opType);
-        _dispatch(targetDomain, abi.encode(seqId, opIndex, op));
+        emit CustodianOpQueued(seqId, opIndex, targetDomain, opType);
+        IHyperswapBridgeRouter(bridgeRouter).callCustodian(targetDomain, seqId, opIndex, opType, payload);
         return seq;
     }
 
 
     function isLocal(Token memory token) internal view returns (bool) {
-        return _localDomain() == token.domainID;
+        return localDomain == token.domainID;
     }
 
     function quote(uint256 amountA, uint256 reserveA, uint256 reserveB) public pure virtual override returns (uint256 amountB) {

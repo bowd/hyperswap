@@ -3,11 +3,43 @@ import '@nomiclabs/hardhat-waffle';
 import '@typechain/hardhat';
 import 'hardhat-gas-reporter';
 import 'solidity-coverage';
+import "hardhat-preprocessor";
+
+import fs from 'fs';
+
+function getRemappings() {
+  return fs
+    .readFileSync("remappings.txt", "utf8")
+    .split("\n")
+    .filter(Boolean) // remove empty lines
+    .filter((line) => !line.match(/node_modules/))
+    .map((line) => line.trim().split("="));
+}
 
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
+  preprocess: {
+    eachLine: (hre) => ({
+      transform: (line: string) => {
+        if (line.match(/^\s*import /i)) {
+          const remappings = getRemappings()
+          for (let i = 0; i < remappings.length; i++) {
+            const [find, replace] = remappings[i];
+            if (line.match(find)) {
+              line = line.replace(find, replace);
+              break;
+            }
+          }
+        }
+        return line;
+      },
+    }),
+  },
+  paths: {
+    cache: './cache_hardhat'
+  },
   solidity: {
     compilers: [
       {

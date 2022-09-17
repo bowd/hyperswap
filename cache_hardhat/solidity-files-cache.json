@@ -1,0 +1,1864 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/home/bowd/Workspace/fun/hyperswap/contracts/AccountingERC20.sol": {
+      "lastModificationDate": 1663444351448,
+      "contentHash": "2204a0969f119ac28d91ace2fae82822",
+      "sourceName": "contracts/AccountingERC20.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+        "@openzeppelin/contracts/access/Ownable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.13"
+      ],
+      "artifacts": [
+        "AccountingERC20"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol": {
+      "lastModificationDate": 1663364283505,
+      "contentHash": "a9d2146925da52142435d3bb8df53c3c",
+      "sourceName": "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [
+        "./IERC20.sol",
+        "./extensions/IERC20Metadata.sol",
+        "../../utils/Context.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "ERC20"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/node_modules/@openzeppelin/contracts/access/Ownable.sol": {
+      "lastModificationDate": 1663364283475,
+      "contentHash": "8398972af73b4e9e5ff3b31cad86234f",
+      "sourceName": "@openzeppelin/contracts/access/Ownable.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [
+        "../utils/Context.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "Ownable"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol": {
+      "lastModificationDate": 1663364283505,
+      "contentHash": "ad7c2d0af148c8f9f097d65deeb4da6b",
+      "sourceName": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "IERC20"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol": {
+      "lastModificationDate": 1663364283505,
+      "contentHash": "909ab67fc5c25033fe6cd364f8c056f9",
+      "sourceName": "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [
+        "../IERC20.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "IERC20Metadata"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/node_modules/@openzeppelin/contracts/utils/Context.sol": {
+      "lastModificationDate": 1663364283478,
+      "contentHash": "5f2c5c4b6af2dd4551027144797bc8be",
+      "sourceName": "@openzeppelin/contracts/utils/Context.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "Context"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/contracts/HyperswapFactory.sol": {
+      "lastModificationDate": 1663444415235,
+      "contentHash": "2d53d8477f7ac1fe7e072d5d9758fba4",
+      "sourceName": "contracts/HyperswapFactory.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [
+        "./interfaces/IHyperswapFactory.sol",
+        "./interfaces/IHyperswapPair.sol",
+        "./HyperswapPair.sol",
+        "./AccountingERC20.sol",
+        "./libraries/HyperswapLibrary.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.13"
+      ],
+      "artifacts": [
+        "HyperswapFactory"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/contracts/interfaces/IHyperswapFactory.sol": {
+      "lastModificationDate": 1663400349065,
+      "contentHash": "75ef4fcf9137e399961c41079ac2c27e",
+      "sourceName": "contracts/interfaces/IHyperswapFactory.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [
+        "../libraries/HyperswapLibrary.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.13"
+      ],
+      "artifacts": [
+        "IHyperswapFactory"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/contracts/interfaces/IHyperswapPair.sol": {
+      "lastModificationDate": 1663401479143,
+      "contentHash": "f09edd545e397616dc62d21c5af813a9",
+      "sourceName": "contracts/interfaces/IHyperswapPair.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [
+        "./IHyperswapERC20.sol",
+        "../libraries/HyperswapLibrary.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.13"
+      ],
+      "artifacts": [
+        "IHyperswapPair"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/contracts/HyperswapPair.sol": {
+      "lastModificationDate": 1663444080613,
+      "contentHash": "1a9df2d535f7c85d78bdc286c34aa52e",
+      "sourceName": "contracts/HyperswapPair.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [
+        "lib/forge-std/src/Test.sol",
+        "./interfaces/IHyperswapPair.sol",
+        "./interfaces/IHyperswapFactory.sol",
+        "./interfaces/IHyperswapCallee.sol",
+        "./interfaces/IERC20.sol",
+        "./HyperswapERC20.sol",
+        "./libraries/Math.sol",
+        "./libraries/UQ112x112.sol",
+        "./libraries/HyperswapLibrary.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.13"
+      ],
+      "artifacts": [
+        "HyperswapPair"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/contracts/libraries/HyperswapLibrary.sol": {
+      "lastModificationDate": 1663389000605,
+      "contentHash": "704e849359df014aa4b120a39aef2d67",
+      "sourceName": "contracts/libraries/HyperswapLibrary.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [
+        "lib/forge-std/src/Test.sol",
+        "../interfaces/IHyperswapPair.sol",
+        "../HyperswapPair.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.13"
+      ],
+      "artifacts": [
+        "HyperswapLibrary",
+        "HyperswapToken"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/lib/forge-std/src/Test.sol": {
+      "lastModificationDate": 1663364700705,
+      "contentHash": "42cf1aaab52403abc5d8b40e02a213e7",
+      "sourceName": "lib/forge-std/src/Test.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [
+        "./Script.sol",
+        "lib/forge-std/lib/ds-test/src/test.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.0 <0.9.0"
+      ],
+      "artifacts": [
+        "Test",
+        "stdError",
+        "stdMath",
+        "stdStorage"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/lib/forge-std/src/Script.sol": {
+      "lastModificationDate": 1663364475055,
+      "contentHash": "571dde8775a6214a03d6772ee330ead5",
+      "sourceName": "lib/forge-std/src/Script.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [
+        "./console.sol",
+        "./console2.sol",
+        "./StdJson.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.0 <0.9.0"
+      ],
+      "artifacts": [
+        "Script"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/lib/forge-std/lib/ds-test/src/test.sol": {
+      "lastModificationDate": 1663364475641,
+      "contentHash": "962996f0e05d5218857a538a62d7c47e",
+      "sourceName": "lib/forge-std/lib/ds-test/src/test.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.5.0"
+      ],
+      "artifacts": [
+        "DSTest"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/lib/forge-std/src/console.sol": {
+      "lastModificationDate": 1663364475058,
+      "contentHash": "100b8a33b917da1147740d7ab8b0ded3",
+      "sourceName": "lib/forge-std/src/console.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.4.22 <0.9.0"
+      ],
+      "artifacts": [
+        "console"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/lib/forge-std/src/console2.sol": {
+      "lastModificationDate": 1663364475058,
+      "contentHash": "5df91f8e93efbfcccf68973dc1b74a70",
+      "sourceName": "lib/forge-std/src/console2.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.4.22 <0.9.0"
+      ],
+      "artifacts": [
+        "console2"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/lib/forge-std/src/StdJson.sol": {
+      "lastModificationDate": 1663364475055,
+      "contentHash": "75c782f20a301ab9827060a03da071e4",
+      "sourceName": "lib/forge-std/src/StdJson.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [
+        "./Vm.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.0 <0.9.0"
+      ],
+      "artifacts": [
+        "stdJson"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/lib/forge-std/src/Vm.sol": {
+      "lastModificationDate": 1663364475055,
+      "contentHash": "4260ba1200fd6c8f55a0ee9935f2d3d0",
+      "sourceName": "lib/forge-std/src/Vm.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.0 <0.9.0"
+      ],
+      "artifacts": [
+        "Vm"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/contracts/interfaces/IHyperswapERC20.sol": {
+      "lastModificationDate": 1663367343403,
+      "contentHash": "8b0621a92d46f5eb6b88bb52801e686b",
+      "sourceName": "contracts/interfaces/IHyperswapERC20.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.13"
+      ],
+      "artifacts": [
+        "IHyperswapERC20"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/contracts/interfaces/IHyperswapCallee.sol": {
+      "lastModificationDate": 1663388014052,
+      "contentHash": "804bda65ca11a19582991c939e92e07e",
+      "sourceName": "contracts/interfaces/IHyperswapCallee.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.13"
+      ],
+      "artifacts": [
+        "IHyperswapCallee"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/contracts/interfaces/IERC20.sol": {
+      "lastModificationDate": 1663401708473,
+      "contentHash": "ee57d8a47ef2c733f12e9e104b0b41b5",
+      "sourceName": "contracts/interfaces/IERC20.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.13"
+      ],
+      "artifacts": [
+        "IERC20"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/contracts/HyperswapERC20.sol": {
+      "lastModificationDate": 1663443984392,
+      "contentHash": "36bfc4b86dca5c268bc11555511378e8",
+      "sourceName": "contracts/HyperswapERC20.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [
+        "./interfaces/IHyperswapERC20.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.13"
+      ],
+      "artifacts": [
+        "HyperswapERC20"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/contracts/libraries/Math.sol": {
+      "lastModificationDate": 1663367564253,
+      "contentHash": "d0adf67cf6ae15eae57e0cd1232de067",
+      "sourceName": "contracts/libraries/Math.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.13"
+      ],
+      "artifacts": [
+        "Math"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/contracts/libraries/UQ112x112.sol": {
+      "lastModificationDate": 1663368610943,
+      "contentHash": "16bac2f667d80953fab17f73a5f8a4fa",
+      "sourceName": "contracts/libraries/UQ112x112.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.13"
+      ],
+      "artifacts": [
+        "UQ112x112"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/contracts/HyperswapRouter.sol": {
+      "lastModificationDate": 1663447068077,
+      "contentHash": "c80f4cc43176316262352bfb4b4cdbfd",
+      "sourceName": "contracts/HyperswapRouter.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [
+        "lib/forge-std/src/Test.sol",
+        "@abacus-network/app/contracts/Router.sol",
+        "./interfaces/IHyperswapFactory.sol",
+        "./interfaces/IHyperswapRouter.sol",
+        "./interfaces/IHyperswapPair.sol",
+        "./interfaces/IERC20.sol",
+        "./libraries/HyperswapLibrary.sol",
+        "./libraries/TransferHelper.sol",
+        "./libraries/SequenceLib.sol",
+        "./HyperswapFactory.sol",
+        "./HyperswapConstants.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.13"
+      ],
+      "artifacts": [
+        "HyperswapRouter"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/node_modules/@abacus-network/app/contracts/Router.sol": {
+      "lastModificationDate": 1663364282042,
+      "contentHash": "3fec08cea4d07324c3f0beb07e26c370",
+      "sourceName": "@abacus-network/app/contracts/Router.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [
+        "./AbacusConnectionClient.sol",
+        "@abacus-network/core/interfaces/IAbacusConnectionManager.sol",
+        "@abacus-network/core/interfaces/IInterchainGasPaymaster.sol",
+        "@abacus-network/core/interfaces/IMessageRecipient.sol",
+        "@abacus-network/core/interfaces/IOutbox.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.11"
+      ],
+      "artifacts": [
+        "Router"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/contracts/interfaces/IHyperswapRouter.sol": {
+      "lastModificationDate": 1663445907452,
+      "contentHash": "fde2d4d13ec0b64e4da51621948e2ea5",
+      "sourceName": "contracts/interfaces/IHyperswapRouter.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [
+        "../libraries/HyperswapLibrary.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.13"
+      ],
+      "artifacts": [
+        "IHyperswapRouter"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/contracts/libraries/TransferHelper.sol": {
+      "lastModificationDate": 1663371082915,
+      "contentHash": "bf407c04c5c37e192dbd618a480f5715",
+      "sourceName": "contracts/libraries/TransferHelper.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.13"
+      ],
+      "artifacts": [
+        "TransferHelper"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/contracts/libraries/SequenceLib.sol": {
+      "lastModificationDate": 1663440971000,
+      "contentHash": "a82af5a306597d325308e2561822d5f0",
+      "sourceName": "contracts/libraries/SequenceLib.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.13"
+      ],
+      "artifacts": [
+        "SequenceLib"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/contracts/HyperswapConstants.sol": {
+      "lastModificationDate": 1663446964666,
+      "contentHash": "0a4486d71fe80dffd9a7f70cbd5f569d",
+      "sourceName": "contracts/HyperswapConstants.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.13"
+      ],
+      "artifacts": [
+        "HyperswapConstants"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/node_modules/@abacus-network/app/contracts/AbacusConnectionClient.sol": {
+      "lastModificationDate": 1663364282042,
+      "contentHash": "0ca35cad88463e207c27218148509196",
+      "sourceName": "@abacus-network/app/contracts/AbacusConnectionClient.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [
+        "@abacus-network/core/interfaces/IInterchainGasPaymaster.sol",
+        "@abacus-network/core/interfaces/IOutbox.sol",
+        "@abacus-network/core/interfaces/IAbacusConnectionManager.sol",
+        "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.11"
+      ],
+      "artifacts": [
+        "AbacusConnectionClient"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/node_modules/@abacus-network/core/interfaces/IAbacusConnectionManager.sol": {
+      "lastModificationDate": 1663364282308,
+      "contentHash": "2a0970346903500d99b6e1b4bcaf6665",
+      "sourceName": "@abacus-network/core/interfaces/IAbacusConnectionManager.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [
+        "./IOutbox.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.11"
+      ],
+      "artifacts": [
+        "IAbacusConnectionManager"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/node_modules/@abacus-network/core/interfaces/IInterchainGasPaymaster.sol": {
+      "lastModificationDate": 1663364282308,
+      "contentHash": "c329f7a81eadc400bccb8e8968b43bd3",
+      "sourceName": "@abacus-network/core/interfaces/IInterchainGasPaymaster.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.11"
+      ],
+      "artifacts": [
+        "IInterchainGasPaymaster"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/node_modules/@abacus-network/core/interfaces/IMessageRecipient.sol": {
+      "lastModificationDate": 1663364282312,
+      "contentHash": "528e49377e9af17bc359f85250fe99c2",
+      "sourceName": "@abacus-network/core/interfaces/IMessageRecipient.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.11"
+      ],
+      "artifacts": [
+        "IMessageRecipient"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/node_modules/@abacus-network/core/interfaces/IOutbox.sol": {
+      "lastModificationDate": 1663364282312,
+      "contentHash": "5faaedc15bbef3e5696297e201a06001",
+      "sourceName": "@abacus-network/core/interfaces/IOutbox.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [
+        "./IMailbox.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.11"
+      ],
+      "artifacts": [
+        "IOutbox"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol": {
+      "lastModificationDate": 1663364280905,
+      "contentHash": "11b77de3cb69dfc6b342ec87bd09cbdd",
+      "sourceName": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [
+        "../utils/ContextUpgradeable.sol",
+        "../proxy/utils/Initializable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "OwnableUpgradeable"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/node_modules/@abacus-network/core/interfaces/IMailbox.sol": {
+      "lastModificationDate": 1663364282312,
+      "contentHash": "56d0ce9b3aab95c63daa50038f498507",
+      "sourceName": "@abacus-network/core/interfaces/IMailbox.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.11"
+      ],
+      "artifacts": [
+        "IMailbox"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol": {
+      "lastModificationDate": 1663364280908,
+      "contentHash": "6200b84950eb05b4a92a39fd1d6e0f9b",
+      "sourceName": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [
+        "../proxy/utils/Initializable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "ContextUpgradeable"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol": {
+      "lastModificationDate": 1663364280922,
+      "contentHash": "be27cb63ce8e469db3306a210450385f",
+      "sourceName": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [
+        "../../utils/AddressUpgradeable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.2"
+      ],
+      "artifacts": [
+        "Initializable"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol": {
+      "lastModificationDate": 1663364280905,
+      "contentHash": "b70d2e0552ab1f44f7e44b5f8379c358",
+      "sourceName": "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.1"
+      ],
+      "artifacts": [
+        "AddressUpgradeable"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/contracts/HyperswapRemoteRouter.sol": {
+      "lastModificationDate": 1663447088034,
+      "contentHash": "d3ec08f47874ba8dd12767c703e916e9",
+      "sourceName": "contracts/HyperswapRemoteRouter.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [
+        "lib/forge-std/src/Test.sol",
+        "@abacus-network/app/contracts/Router.sol",
+        "./interfaces/IERC20.sol",
+        "./libraries/SequenceLib.sol",
+        "./HyperswapConstants.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.13"
+      ],
+      "artifacts": [
+        "HyperswapRemoteRouter"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/contracts/libraries/HyperswapLiquidityMathLibrary.sol": {
+      "lastModificationDate": 1663381417552,
+      "contentHash": "bbd267ca6ad26bb82100243742399c41",
+      "sourceName": "contracts/libraries/HyperswapLiquidityMathLibrary.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [
+        "../interfaces/IHyperswapPair.sol",
+        "../interfaces/IHyperswapFactory.sol",
+        "./Babylonian.sol",
+        "./FullMath.sol",
+        "./HyperswapLibrary.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.13"
+      ],
+      "artifacts": [
+        "HyperswapLiquidityMathLibrary"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/contracts/libraries/Babylonian.sol": {
+      "lastModificationDate": 1663367919106,
+      "contentHash": "c137fe38900f76167dab7934ec096b5b",
+      "sourceName": "contracts/libraries/Babylonian.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.13"
+      ],
+      "artifacts": [
+        "Babylonian"
+      ]
+    },
+    "/home/bowd/Workspace/fun/hyperswap/contracts/libraries/FullMath.sol": {
+      "lastModificationDate": 1663368387173,
+      "contentHash": "26a0778fe7a3397b31d3c669bdc51f4f",
+      "sourceName": "contracts/libraries/FullMath.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "libraries": {
+            "": {
+              "__CACHE_BREAKER__": "0x0000000000000031363633343438373731333930"
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.13"
+      ],
+      "artifacts": [
+        "FullMath"
+      ]
+    }
+  }
+}

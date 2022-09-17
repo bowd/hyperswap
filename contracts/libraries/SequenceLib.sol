@@ -2,8 +2,8 @@
 pragma solidity ^0.8.13;
 
 library SequenceLib {
-    struct RemoteOperation {
-        uint8 remoteOpType;
+    struct CustodianOperation {
+        uint8 opType;
         uint256 deadline;
         bytes payload;
         bool completed;
@@ -36,7 +36,7 @@ library SequenceLib {
         );
     }
 
-    function hasPendingRemoteOps(Sequence memory self) internal pure returns (bool) {
+    function hasPendingCustodianOps(Sequence memory self) internal pure returns (bool) {
         return self.remoteOpsFinished < self.remoteOpsQueued;
     }
 
@@ -48,9 +48,9 @@ library SequenceLib {
         return self.remoteOpsFinished < self.remoteOpsQueued || self.remoteOpsFailed > 0 ? self.stage : self.queuedStage;
     }
 
-    function addRemoteOp(Sequence memory self, uint8 remoteOpType, bytes memory payload) internal view returns (Sequence memory, RemoteOperation memory) {
-        RemoteOperation memory remoteOp = RemoteOperation(
-            remoteOpType,
+    function addCustodianOp(Sequence memory self, uint8 opType, bytes memory payload) internal view returns (Sequence memory, CustodianOperation memory) {
+        CustodianOperation memory remoteOp = CustodianOperation(
+            opType,
             block.timestamp + 1000000, // TODO: What should the deadline be / how should it play in?
             payload,
             false,
@@ -60,7 +60,7 @@ library SequenceLib {
         return (self, remoteOp);
     }
 
-    function finishRemoteOp(Sequence memory self, RemoteOperation memory remoteOp, bool success) internal pure returns (Sequence memory, RemoteOperation memory) {
+    function finishCustodianOp(Sequence memory self, CustodianOperation memory remoteOp, bool success) internal pure returns (Sequence memory, CustodianOperation memory) {
         remoteOp.completed = true;
         remoteOp.succeeded = success;
 

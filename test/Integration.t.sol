@@ -10,7 +10,8 @@ import {IHyperswapPair} from "contracts/interfaces/IHyperswapPair.sol";
 
 import {HyperswapFactory} from "contracts/HyperswapFactory.sol";
 import {HyperswapRouter} from "contracts/HyperswapRouter.sol";
-import {HyperswapRemoteRouter} from "contracts/HyperswapRemoteRouter.sol";
+import {HyperswapBridgeRouter} from "contracts/HyperswapBridgeRouter.sol";
+import {HyperswapCustodian} from "contracts/HyperswapCustodian.sol";
 import {HyperswapPair} from "contracts/HyperswapPair.sol";
 import {Token, HyperswapLibrary} from "contracts/libraries/HyperswapLibrary.sol";
 
@@ -18,25 +19,29 @@ import {MockInbox} from "./utils/MockInbox.sol";
 import {MockOutbox} from "./utils/MockOutbox.sol";
 
 contract IntegrationTest is Test {
-    uint32 constant HostChainDomain = 0x3333;
-    uint32 constant RemoteChainDomain = 0x4444;
+    uint32 constant HubChainDomain = 0x3333;
+    uint32 constant SpokeChainDomain = 0x4444;
 
 
     address abcDeployer;
     address hswapDeployer;
     address user;
 
-    AbacusConnectionManager hostACM;
-    MockInbox hostInbox;
-    MockOutbox hostOutbox;
+    AbacusConnectionManager hubACM;
+    MockInbox hubInbox;
+    MockOutbox hubOutbox;
 
-    AbacusConnectionManager remoteACM;
-    MockInbox remoteInbox;
-    MockOutbox remoteOutbox;
+    AbacusConnectionManager spokeACM;
+    MockInbox spokeInbox;
+    MockOutbox spokeOutbox;
 
     HyperswapFactory factory;
+
+    HyperswapBridgeRouter hubRouter;
+    HyperswapBridgeRouter spokeRouter;
+
     HyperswapRouter router;
-    HyperswapRemoteRouter remoteRouter;
+    HyperswapCustodian custodian;
 
     ERC20 token0;
     ERC20 token1;
@@ -48,46 +53,54 @@ contract IntegrationTest is Test {
         vm.label(user, "user");
 
         changePrank(abcDeployer);
-        remoteInbox = new MockInbox(RemoteChainDomain);
-        vm.label(address(remoteInbox), "RemoteInbox");
-        hostInbox = new MockInbox(HostChainDomain);
-        vm.label(address(hostInbox), "HostInbox");
+        spokeInbox = new MockInbox(SpokeChainDomain);
+        vm.label(address(spokeInbox), "spokeInbox");
+        hubInbox = new MockInbox(HubChainDomain);
+        vm.label(address(hubInbox), "hubInbox");
 
-        hostOutbox = new MockOutbox(address(remoteInbox), HostChainDomain);
-        vm.label(address(hostOutbox), "HostOutbox");
-        remoteOutbox = new MockOutbox(address(hostInbox), RemoteChainDomain);
-        vm.label(address(remoteOutbox), "RemoteOutbox");
+        hubOutbox = new MockOutbox(address(spokeInbox), HubChainDomain);
+        vm.label(address(hubOutbox), "hubOutbox");
+        spokeOutbox = new MockOutbox(address(hubInbox), SpokeChainDomain);
+        vm.label(address(spokeOutbox), "spokeOutbox");
 
-        hostACM = new AbacusConnectionManager();
-        hostACM.setOutbox(address(hostOutbox));
-        hostACM.enrollInbox(RemoteChainDomain, address(hostInbox));
-        vm.label(address(hostACM), "HostACM");
+        hubACM = new AbacusConnectionManager();
+        hubACM.setOutbox(address(hubOutbox));
+        hubACM.enrollInbox(SpokeChainDomain, address(hubInbox));
+        vm.label(address(hubACM), "hubACM");
 
-        remoteACM = new AbacusConnectionManager();
-        remoteACM.setOutbox(address(remoteOutbox));
-        remoteACM.enrollInbox(HostChainDomain, address(remoteInbox));
-        vm.label(address(remoteACM), "RemoteACM");
-
+        spokeACM = new AbacusConnectionManager();
+        spokeACM.setOutbox(address(spokeOutbox));
+        spokeACM.enrollInbox(HubChainDomain, address(spokeInbox));
+        vm.label(address(spokeACM), "spokeACM");
 
         changePrank(hswapDeployer);
-        // factory = new HyperswapFactory(hswapDeployer);
-        router = new HyperswapRouter(hswapDeployer);
-        router.initialize(address(hostACM));
+
+        hubRouter = new HyperswapBridgeRouter();
+        vm.label(address(hubRouter), "HubBridgeRouter");
+        router = new HyperswapRouter(hswapDeployer, address(hubRouter), hubACM.localDomain());
+        hubRouter.initialize(address(hubACM), address(0), address(router), true);
 
         factory = HyperswapFactory(router.factory());
 
-        remoteRouter = new HyperswapRemoteRouter();
-        remoteRouter.initialize(address(remoteACM));
+        spokeRouter = new HyperswapBridgeRouter();
+        vm.label(address(spokeRouter), "SpokeBridgeRouter");
+        custodian = new HyperswapCustodian(address(spokeRouter));
+        spokeRouter.initialize(address(spokeACM), address(custodian), address(0), false);
 
-        router.enrollRemoteRouter(
-            RemoteChainDomain,
-            bytes32(uint256(uint160(address(remoteRouter))))
+        hubRouter.enrollRemoteRouter(
+            SpokeChainDomain,
+            bytes32(uint256(uint160(address(spokeRouter))))
         );
 
-        remoteRouter.enrollRemoteRouter(
-            HostChainDomain,
-            bytes32(uint256(uint160(address(router))))
+        spokeRouter.enrollRemoteRouter(
+            HubChainDomain,
+            bytes32(uint256(uint160(address(hubRouter))))
         );
+
+        // spokeRouter.enrollRemoteRouter(
+        //     HubChainDomain,
+        //     bytes32(uint256(uint160(address(router))))
+        // );
 
 
         token0 = new ERC20("Token0", "TK0");
@@ -104,14 +117,14 @@ contract IntegrationTest is Test {
         changePrank(user);
 
         token0.approve(address(router), 1e22);
-        token1.approve(address(remoteRouter), 9e21);
+        token1.approve(address(custodian), 9e21);
 
         Token memory tt0 = Token({
-            domainID: HostChainDomain,
+            domainID: HubChainDomain,
             tokenAddr: address(token0)
         });
         Token memory tt1 = Token({
-            domainID: RemoteChainDomain,
+            domainID: SpokeChainDomain,
             tokenAddr: address(token1)
         });
 
@@ -126,8 +139,8 @@ contract IntegrationTest is Test {
             block.timestamp + 1000
         );
 
-        remoteInbox.processNextPendingMessage();
-        hostInbox.processNextPendingMessage();
+        spokeInbox.processNextPendingMessage();
+        hubInbox.processNextPendingMessage();
 
         address pair = factory.getPair(tt0, tt1);
         vm.label(IHyperswapPair(pair).tokenRemoteProxy(), "TK1Proxy");
@@ -144,18 +157,18 @@ contract IntegrationTest is Test {
 
         router.swapExactTokensForTokens(1e20, 0, path, user, block.timestamp + 1000);
 
-        remoteInbox.processNextPendingMessage();
-        hostInbox.processNextPendingMessage();
+        spokeInbox.processNextPendingMessage();
+        hubInbox.processNextPendingMessage();
 
-        token1.approve(address(remoteRouter), 1e19);
+        token1.approve(address(custodian), 1e19);
 
         path[0] = tt1;
         path[1] = tt0;
 
         router.swapExactTokensForTokens(1e19, 0, path, user, block.timestamp + 1000);
 
-        remoteInbox.processNextPendingMessage();
-        hostInbox.processNextPendingMessage();
+        spokeInbox.processNextPendingMessage();
+        hubInbox.processNextPendingMessage();
 
         router.removeLiquidity(
             tt0,
@@ -167,7 +180,7 @@ contract IntegrationTest is Test {
             block.timestamp + 1000
         );
 
-        remoteInbox.processNextPendingMessage();
-        hostInbox.processNextPendingMessage();
+        spokeInbox.processNextPendingMessage();
+        hubInbox.processNextPendingMessage();
     }
 }
