@@ -1,0 +1,61 @@
+{
+  "transactions": [
+    {
+      "hash": "0x690da1929653dd2e0dfd44514776d9c17d54c5599732421dc249c8b42d185696",
+      "transactionType": "CREATE",
+      "contractName": null,
+      "contractAddress": "0x315c84fe69ddee16a62369ff340e0ac59e29b876",
+      "function": null,
+      "arguments": null,
+      "transaction": {
+        "type": "0x00",
+        "from": "0x118923444de650eb6321f5bf7955812c507b98d7",
+        "to": "0x315c84fe69ddee16a62369ff340e0ac59e29b876",
+        "gas": "0x1115d",
+        "value": "0x0",
+        "data": "0xb49c53a70000000000000000000000000000000000000000000000000000000000013881000000000000000000000000472b491176d3f3aa535f856caeac6d1ce96d57f8",
+        "nonce": "0x9"
+      },
+      "additionalContracts": []
+    }
+  ],
+  "receipts": [
+    {
+      "transactionHash": "0x690da1929653dd2e0dfd44514776d9c17d54c5599732421dc249c8b42d185696",
+      "transactionIndex": "0x2",
+      "blockHash": "0x2bd4529dd8513a89b482bf3f1c52b29edd5b11d8ac0b00a328f14ee894e29093",
+      "blockNumber": "0xcfd809",
+      "from": "0x118923444de650eb6321f5bf7955812c507b98d7",
+      "to": "0x315c84fe69ddee16a62369ff340e0ac59e29b876",
+      "cumulativeGasUsed": "0x62349",
+      "gasUsed": "0xb0c3",
+      "contractAddress": null,
+      "logs": [
+        {
+          "address": "0x315c84fe69ddee16a62369ff340e0ac59e29b876",
+          "topics": [
+            "0x97fd51fef1f80c854cbd0150c248e8b2ac4ecdc97cc05e742b5f61c9f4dc6458",
+            "0x0000000000000000000000000000000000000000000000000000000000013881",
+            "0x000000000000000000000000472b491176d3f3aa535f856caeac6d1ce96d57f8"
+          ],
+          "data": "0x",
+          "blockHash": "0x2bd4529dd8513a89b482bf3f1c52b29edd5b11d8ac0b00a328f14ee894e29093",
+          "blockNumber": "0xcfd809",
+          "transactionHash": "0x690da1929653dd2e0dfd44514776d9c17d54c5599732421dc249c8b42d185696",
+          "transactionIndex": "0x2",
+          "logIndex": "0x2",
+          "removed": false
+        }
+      ],
+      "status": "0x1",
+      "logsBloom": "0x00000000000000000000000000000000002000000000000000000020000000000000000000002000000000000000000000000000000000000080000000000000000000000000008800000000000000000000800000000000000000000000000000001000000000000000000000000000000000000000004000000000000000000000800200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "effectiveGasPrice": "0x1dcd6500"
+    }
+  ],
+  "libraries": [],
+  "pending": [],
+  "path": "/home/bowd/Workspace/fun/hyperswap/broadcast/RegisterRouterHub.s.sol/44787/run-latest.json",
+  "returns": {},
+  "timestamp": 1663468933,
+  "commit": "d34938b"
+}

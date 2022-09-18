@@ -4,8 +4,8 @@ pragma solidity ^0.8.13;
 import {IHyperswapERC20} from "./interfaces/IHyperswapERC20.sol";
 
 contract HyperswapERC20 is IHyperswapERC20 {
-    string public constant name = "Uniswap V2";
-    string public constant symbol = "UNI-V2";
+    string public constant name = "Hyperswap";
+    string public constant symbol = "HYSW";
     uint8 public constant decimals = 18;
     uint256  public totalSupply;
     mapping(address => uint256) public balanceOf;

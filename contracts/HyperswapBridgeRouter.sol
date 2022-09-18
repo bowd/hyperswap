@@ -5,6 +5,7 @@ import {Router as BridgeRouter} from "@abacus-network/app/contracts/Router.sol";
 import {IHyperswapCustodian} from "./interfaces/IHyperswapCustodian.sol";
 import {IHyperswapRouter} from "./interfaces/IHyperswapRouter.sol";
 import {IHyperswapBridgeRouter} from "./interfaces/IHyperswapBridgeRouter.sol";
+import {SequenceLib} from "./libraries/SequenceLib.sol";
 
 contract HyperswapBridgeRouter is IHyperswapBridgeRouter, BridgeRouter {
     uint8 constant public CUSTODIAN_MESSAGE = 0x11;
@@ -72,8 +73,8 @@ contract HyperswapBridgeRouter is IHyperswapBridgeRouter, BridgeRouter {
         }
     }
 
-    function callCustodian(uint32 domain, bytes32 seqId, uint256 opIndex, uint8 opType, bytes memory payload) external onlyHyperswapRouter {
-        CustodianMessage memory cMessage = CustodianMessage(seqId, opIndex, opType, payload);
+    function callCustodian(uint32 domain, bytes32 seqId, uint256 opIndex, SequenceLib.CustodianOperation memory op) external onlyHyperswapRouter {
+        CustodianMessage memory cMessage = CustodianMessage(seqId, opIndex, op.opType, op.payload);
         Message memory message = Message(CUSTODIAN_MESSAGE, abi.encode(cMessage));
         _dispatch(domain, abi.encode(message));
     }

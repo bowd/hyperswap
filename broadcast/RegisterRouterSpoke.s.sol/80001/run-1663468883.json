@@ -1,0 +1,32 @@
+{
+  "transactions": [
+    {
+      "hash": "0x56b6a27f46b61a083edbbf5c4d5970885f01a76586118bfac4095905b3898f5a",
+      "transactionType": "CREATE",
+      "contractName": null,
+      "contractAddress": "0x472b491176d3f3aa535f856caeac6d1ce96d57f8",
+      "function": null,
+      "arguments": null,
+      "transaction": {
+        "type": "0x02",
+        "from": "0x118923444de650eb6321f5bf7955812c507b98d7",
+        "to": "0x472b491176d3f3aa535f856caeac6d1ce96d57f8",
+        "gas": "0x1021c",
+        "value": "0x0",
+        "data": "0xb49c53a700000000000000000000000000000000000000000000000000000000000003e8000000000000000000000000315c84fe69ddee16a62369ff340e0ac59e29b876",
+        "nonce": "0x3",
+        "accessList": []
+      },
+      "additionalContracts": []
+    }
+  ],
+  "receipts": [],
+  "libraries": [],
+  "pending": [
+    "0x56b6a27f46b61a083edbbf5c4d5970885f01a76586118bfac4095905b3898f5a"
+  ],
+  "path": "/home/bowd/Workspace/fun/hyperswap/broadcast/RegisterRouterSpoke.s.sol/80001/run-latest.json",
+  "returns": {},
+  "timestamp": 1663468883,
+  "commit": "d34938b"
+}

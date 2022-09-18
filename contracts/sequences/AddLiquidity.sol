@@ -4,11 +4,11 @@ pragma solidity ^0.8.13;
 import {IHyperswapPair} from "../interfaces/IHyperswapPair.sol";
 import {IERC20} from "../interfaces/IERC20.sol";
 
-import {SequenceLib} from "./SequenceLib.sol";
-import {Token, HyperswapToken, HyperswapLibrary} from "./HyperswapLibrary.sol";
-import {TransferHelper} from "./TransferHelper.sol";
+import {SequenceLib} from "../libraries/SequenceLib.sol";
+import {Token, HyperswapToken, HyperswapLibrary} from "../libraries/HyperswapLibrary.sol";
+import {TransferHelper} from "../libraries/TransferHelper.sol";
 
-import {Shared} from "./Shared.sol";
+import {Constants} from "../libraries/Constants.sol";
 
 library AddLiquidity { 
     using SequenceLib for SequenceLib.Sequence;
@@ -22,6 +22,12 @@ library AddLiquidity {
         address to;
     }
 
+    struct TokenTransferOp {
+        address token;
+        address user;
+        uint256 amount;
+    }
+
     function createSequence(
         uint256 nonce,
         address pair,
@@ -30,10 +36,11 @@ library AddLiquidity {
         uint256 amountLocalMin,
         uint256 amountRemoteMin,
         address to
-    ) external view returns (bytes32 seqId, SequenceLib.Sequence memory seq) {
-        return Shared.createSequence(
-            pair,
-            Shared.Seq_AddLiquidity,
+    ) public view returns (bytes32 seqId, SequenceLib.Sequence memory seq) {
+        seq = SequenceLib.create(
+            Constants.Seq_AddLiquidity, 
+            pair, 
+            msg.sender,
             abi.encode(
                 Context(
                     amountLocalDesired,
@@ -43,9 +50,9 @@ library AddLiquidity {
                     0,
                     to
                 )
-            ),
-            nonce
+            )
         );
+        seqId = keccak256(abi.encode(block.number, seq.initiator, seq.pair, nonce));
     }
 
     function getAddLiquidityAmounts(
@@ -75,22 +82,22 @@ library AddLiquidity {
         }
     }
 
-    function stage1(SequenceLib.Sequence memory seq) external returns (SequenceLib.Sequence memory, SequenceLib.CustodianOperation memory op) {
+    function stage1(SequenceLib.Sequence memory seq) public returns (SequenceLib.Sequence memory, SequenceLib.CustodianOperation memory op) {
         Context memory context = abi.decode(seq.context, (Context));
         Token memory tokenLocal =  IHyperswapPair(seq.pair).getTokenLocal();
         Token memory tokenRemote =  IHyperswapPair(seq.pair).getTokenRemote();
         // Escrow funds locally
         TransferHelper.safeTransferFrom(tokenLocal.tokenAddr, seq.initiator, address(this), context.amountLocalDesired);
         (seq, op) = seq.addCustodianOp(
-            Shared.RemoteOP_LockFunds,
-            abi.encode(Shared.TokenTransferOp(tokenRemote.tokenAddr, seq.initiator, context.amountRemoteDesired))
+            Constants.RemoteOP_LockFunds,
+            abi.encode(TokenTransferOp(tokenRemote.tokenAddr, seq.initiator, context.amountRemoteDesired))
         );
         seq.queuedStage = 2;
         return (seq, op);
     }
 
 
-    function stage2(SequenceLib.Sequence memory seq) external returns (SequenceLib.Sequence memory, SequenceLib.CustodianOperation memory op) {
+    function stage2(SequenceLib.Sequence memory seq) public returns (SequenceLib.Sequence memory, SequenceLib.CustodianOperation memory op) {
         Context memory context = abi.decode(seq.context, (Context));
         Token memory tokenLocal =  IHyperswapPair(seq.pair).getTokenLocal();
         Token memory tokenRemote =  IHyperswapPair(seq.pair).getTokenRemote();
@@ -117,8 +124,8 @@ library AddLiquidity {
         
         if (remBalance > 0) {
             (seq, op) = seq.addCustodianOp(
-                Shared.RemoteOP_ReleaseFunds,
-                abi.encode(Shared.TokenTransferOp(tokenRemote.tokenAddr, seq.initiator, remBalance))
+                Constants.RemoteOP_ReleaseFunds,
+                abi.encode(TokenTransferOp(tokenRemote.tokenAddr, seq.initiator, remBalance))
             );
         }
 
@@ -130,8 +137,8 @@ library AddLiquidity {
         return (seq, op);
     }
 
-    function stage3(SequenceLib.Sequence memory seq, SequenceLib.CustodianOperation memory op) external returns (SequenceLib.Sequence memory) {
-        Shared.TokenTransferOp memory payload = abi.decode(op.payload, (Shared.TokenTransferOp));
+    function stage3(SequenceLib.Sequence memory seq, SequenceLib.CustodianOperation memory op) public returns (SequenceLib.Sequence memory) {
+        TokenTransferOp memory payload = abi.decode(op.payload, (TokenTransferOp));
         IERC20 tokenRemoteProxy = IERC20(IHyperswapPair(seq.pair).tokenRemoteProxy());
         tokenRemoteProxy.burn(seq.initiator, payload.amount);
         return seq;

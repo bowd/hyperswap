@@ -8,7 +8,7 @@ import {Context} from "@openzeppelin/contracts/utils/Context.sol";
 import {IERC20} from "./interfaces/IERC20.sol";
 import {IHyperswapCustodian} from "./interfaces/IHyperswapCustodian.sol";
 
-import {Shared} from "./libraries/Shared.sol";
+import {Constants} from "./libraries/Constants.sol";
 
 contract HyperswapCustodian is Context, IHyperswapCustodian {
     address immutable public bridgeRouter;
@@ -42,14 +42,14 @@ contract HyperswapCustodian is Context, IHyperswapCustodian {
     }
 
     function _execute(uint8 opType, bytes calldata _payload) internal returns (bool) {
-        if (opType == Shared.RemoteOP_LockFunds) {
+        if (opType == Constants.RemoteOP_LockFunds) {
             TokenTransferOp memory payload = abi.decode(_payload, (TokenTransferOp));
             try IERC20(payload.token).transferFrom(payload.user, address(this), payload.amount) returns (bool) {
                 return true;
             } catch {
                 return false;
             } 
-        } else if (opType == Shared.RemoteOP_ReleaseFunds) {
+        } else if (opType == Constants.RemoteOP_ReleaseFunds) {
             TokenTransferOp memory payload = abi.decode(_payload, (TokenTransferOp));
             try IERC20(payload.token).transfer(payload.user, payload.amount) returns (bool) {
                 return true;

@@ -12,21 +12,18 @@ import {IERC20} from "./interfaces/IERC20.sol";
 import {Token, HyperswapToken, HyperswapLibrary} from "./libraries/HyperswapLibrary.sol";
 import {TransferHelper} from "./libraries/TransferHelper.sol";
 import {SequenceLib} from "./libraries/SequenceLib.sol";
+import {Constants} from "./libraries/Constants.sol";
 
-import {AddLiquidity} from "./libraries/AddLiquidity.sol";
-import {RemoveLiquidity} from "./libraries/RemoveLiquidity.sol";
-import {Swap} from "./libraries/Swap.sol";
+import {AddLiquidity} from "./sequences/AddLiquidity.sol";
+import {RemoveLiquidity} from "./sequences/RemoveLiquidity.sol";
+import {Swap} from "./sequences/Swap.sol";
 
-import {Shared} from "./libraries/Shared.sol";
 
 contract HyperswapRouter is IHyperswapRouter, Context {
     using HyperswapToken for Token;
     using SequenceLib for SequenceLib.Sequence;
 
-    event CustodianOpQueued(bytes32 indexed seqId, uint256 indexed opIndex, uint32 indexed targetDomain, uint32 opType);
-    event CustodianOpFailed(bytes32 indexed seqId, uint256 indexed opIndex, uint32 indexed targetDomain);
-    event CustodianOpSucceeded(bytes32 indexed seqId, uint256 indexed opIndex, uint32 indexed targetDomain);
-
+    event CustodianOpQueued(bytes32 indexed seqId, uint256 indexed opIndex, uint32 indexed targetDomain);
     event SequenceCreated(bytes32 indexed seqId, address indexed pair, address initiator);
     event SequenceTransitioned(bytes32 indexed seqId, uint32 indexed stage);
 
@@ -39,7 +36,7 @@ contract HyperswapRouter is IHyperswapRouter, Context {
     mapping(bytes32 => SequenceLib.CustodianOperation[]) public sequenceOps;
 
     modifier ensure(uint256 deadline) {
-        require(deadline >= block.timestamp, "HyperswapRouter: EXPIRED");
+        require(deadline >= block.timestamp, "EXPIRED");
         _;
     }
 
@@ -59,20 +56,15 @@ contract HyperswapRouter is IHyperswapRouter, Context {
     }
 
     receive() external payable {
-        revert("Native token transfer ignored");
+        revert("native transfer");
     }
 
-    function handleCustodianResponse(uint32 domain, bytes32 seqId, uint256 opIndex, bool success) external onlyBridgeRouter {
+    function handleCustodianResponse(uint32, bytes32 seqId, uint256 opIndex, bool success) external onlyBridgeRouter {
         SequenceLib.Sequence memory seq = sequences[seqId];
-        require(opIndex <= sequenceOps[seqId].length, "opIndex out of range");
+        require(opIndex <= sequenceOps[seqId].length, "index out of bounds");
         SequenceLib.CustodianOperation memory op = sequenceOps[seqId][opIndex];
         uint32 stageBefore = seq.stage;
         (seq, op) = seq.finishCustodianOp(op, success);
-        if (success) {
-            emit CustodianOpSucceeded(seqId, opIndex, domain);
-        } else {
-            emit CustodianOpFailed(seqId, opIndex, domain);
-        }
         if (seq.stage != stageBefore) {
             emit SequenceTransitioned(seqId, seq.stage);
         }
@@ -85,7 +77,7 @@ contract HyperswapRouter is IHyperswapRouter, Context {
     function _sequenceTransition(bytes32 seqId, SequenceLib.Sequence memory seq) internal returns (SequenceLib.Sequence memory) {
         if (!seq.canTransition()) return seq;
         SequenceLib.CustodianOperation memory nextOp;
-        if (seq.seqType == Shared.Seq_AddLiquidity) {
+        if (seq.seqType == Constants.Seq_AddLiquidity) {
             if (seq.stage == 1) {
                 (seq, nextOp) = AddLiquidity.stage1(seq);
             } else if (seq.stage == 2) {
@@ -93,24 +85,28 @@ contract HyperswapRouter is IHyperswapRouter, Context {
             } else if (seq.stage == 3) {
                 seq = AddLiquidity.stage3(seq, sequenceOps[seqId][1]);
             }
-        } else if (seq.seqType == Shared.Seq_RemoveLiquidity) {
+        } else if (seq.seqType == Constants.Seq_RemoveLiquidity) {
             if (seq.stage == 1) {
                 (seq, nextOp) = RemoveLiquidity.stage1(seq);
             } else if (seq.stage == 2) {
                 seq = RemoveLiquidity.stage2(seq, sequenceOps[seqId][0]);
             }
-        } else if (seq.seqType == Shared.Seq_Swap) {
+        } else if (seq.seqType == Constants.Seq_Swap) {
             if (seq.stage == 1) {
                 (seq, nextOp) = Swap.stage1(seq);
             } else if (seq.stage == 2) {
                 seq = Swap.stage2(seq);
             }
         } else {
-            revert("SeqTransition not defined");
+            revert("!SEQ");
         }
 
         if (nextOp.opType != 0) {
-            _dispatchCustodianOp(IHyperswapPair(seq.pair).getTokenRemote().domainID, seqId, seq, nextOp);
+            uint32 remoteDomain = IHyperswapPair(seq.pair).getTokenRemote().domainID;
+            sequenceOps[seqId].push(nextOp);
+            uint256 opIndex = sequenceOps[seqId].length - 1;
+            emit CustodianOpQueued(seqId, opIndex, remoteDomain);
+            IHyperswapBridgeRouter(bridgeRouter).callCustodian(remoteDomain, seqId, opIndex, nextOp);
         }
 
         return seq;
@@ -221,18 +217,13 @@ contract HyperswapRouter is IHyperswapRouter, Context {
         // XXX: Currently support only 1:1 token swaps, no routing, path.length is always 2
         address pair = IHyperswapFactory(factory).getPair(path[0], path[1]);
         SequenceLib.Sequence memory seq;
-        (seqId, seq) = Shared.createSequence(
+        (seqId, seq) = Swap.createSequence(
+            nonce++,
             pair,
-            Shared.Seq_Swap,
-            abi.encode(
-                Swap.Context(
-                    !isLocal(path[0]),
-                    amounts[0],
-                    amounts[1],
-                    _to
-                )
-            ),
-            nonce++
+            !isLocal(path[0]),
+            amounts[0],
+            amounts[1],
+            _to
         );
 
         sequences[seqId] = _sequenceTransition(seqId, seq);
@@ -248,7 +239,7 @@ contract HyperswapRouter is IHyperswapRouter, Context {
         // XXX: Currently support only 1:1 token swaps, no routing
         require(path.length == 2, "only supports 1:1 swaps");
         uint256[] memory amounts = HyperswapLibrary.getAmountsOut(factory, amountIn, path);
-        require(amounts[amounts.length - 1] >= amountOutMin, "HyperswapRouter: INSUFFICIENT_OUTPUT_AMOUNT");
+        require(amounts[amounts.length - 1] >= amountOutMin, "INSUFFICIENT_OUTPUT_AMOUNT");
         return _swap(amounts, path, to);
     }
 
@@ -260,32 +251,16 @@ contract HyperswapRouter is IHyperswapRouter, Context {
         uint256 deadline
     ) external virtual override ensure(deadline) returns (bytes32 seqId) {
         // XXX: Currently support only 1:1 token swaps, no routing
-        require(path.length == 2, "only supports 1:1 swaps");
+        require(path.length == 2, "!1:M");
         uint256[] memory amounts = HyperswapLibrary.getAmountsIn(factory, amountOut, path);
-        require(amounts[0] <= amountInMax, "HyperswapRouter: EXCESSIVE_INPUT_AMOUNT");
+        require(amounts[0] <= amountInMax, "EXCESSIVE_INPUT_AMOUNT");
         return _swap(amounts, path, to);
     }
-
-    function createSequence_swap(
-        address pair,
-        bool tokenInRemote,
-        uint256 amountIn,
-        uint256 amountOut,
-        address to
-    ) internal returns (bytes32 seqId, SequenceLib.Sequence memory seq) {
-    }
-
 
     // **** LIBRARY FUNCTIONS ****
 
     function _dispatchCustodianOp(uint32 remoteDomain, bytes32 seqId, SequenceLib.Sequence memory seq, SequenceLib.CustodianOperation memory op) internal returns (SequenceLib.Sequence memory) {
-        sequenceOps[seqId].push(op);
-        uint256 opIndex = sequenceOps[seqId].length - 1;
-        emit CustodianOpQueued(seqId, opIndex, remoteDomain, op.opType);
-        IHyperswapBridgeRouter(bridgeRouter).callCustodian(remoteDomain, seqId, opIndex, op.opType, op.payload);
-        return seq;
     }
-
 
     function isLocal(Token memory token) internal view returns (bool) {
         return localDomain == token.domainID;
@@ -296,7 +271,7 @@ contract HyperswapRouter is IHyperswapRouter, Context {
     }
 
     function getAmountOut(uint256 amountIn, uint256 reserveIn, uint256 reserveOut)
-        public
+        external
         pure
         virtual
         override
@@ -306,7 +281,7 @@ contract HyperswapRouter is IHyperswapRouter, Context {
     }
 
     function getAmountIn(uint256 amountOut, uint256 reserveIn, uint256 reserveOut)
-        public
+        external
         pure
         virtual
         override
@@ -316,7 +291,7 @@ contract HyperswapRouter is IHyperswapRouter, Context {
     }
 
     function getAmountsOut(uint256 amountIn, Token[] memory path)
-        public
+        external
         view
         virtual
         override
@@ -326,7 +301,7 @@ contract HyperswapRouter is IHyperswapRouter, Context {
     }
 
     function getAmountsIn(uint256 amountOut, Token[] memory path)
-        public
+        external
         view
         virtual
         override

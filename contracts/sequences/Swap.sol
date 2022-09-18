@@ -4,11 +4,11 @@ pragma solidity ^0.8.13;
 import {IHyperswapPair} from "../interfaces/IHyperswapPair.sol";
 import {IERC20} from "../interfaces/IERC20.sol";
 
-import {SequenceLib} from "./SequenceLib.sol";
-import {Token, HyperswapToken, HyperswapLibrary} from "./HyperswapLibrary.sol";
-import {TransferHelper} from "./TransferHelper.sol";
+import {SequenceLib} from "../libraries/SequenceLib.sol";
+import {Token, HyperswapToken, HyperswapLibrary} from "../libraries/HyperswapLibrary.sol";
+import {TransferHelper} from "../libraries/TransferHelper.sol";
 
-import {Shared} from "./Shared.sol";
+import {Constants} from "../libraries/Constants.sol";
 
 library Swap { 
     using SequenceLib for SequenceLib.Sequence;
@@ -20,6 +20,36 @@ library Swap {
         address to;
     }
 
+    struct TokenTransferOp {
+        address token;
+        address user;
+        uint256 amount;
+    }
+
+    function createSequence(
+        uint256 nonce,
+        address pair,
+        bool tokenInRemote,
+        uint256 amountIn,
+        uint256 amountOut,
+        address to
+    ) public view returns (bytes32 seqId, SequenceLib.Sequence memory seq) {
+        seq = SequenceLib.create(
+            Constants.Seq_Swap, 
+            pair, 
+            msg.sender,
+            abi.encode(
+                Swap.Context(
+                    tokenInRemote,
+                    amountIn,
+                    amountOut,
+                    to
+                )
+            )
+        );
+        seqId = keccak256(abi.encode(block.number, seq.initiator, seq.pair, nonce));
+    }
+
     function stage1(SequenceLib.Sequence memory seq) public returns (SequenceLib.Sequence memory, SequenceLib.CustodianOperation memory op) {
         Context memory context = abi.decode(seq.context, (Context));
         Token memory tokenLocal =  IHyperswapPair(seq.pair).getTokenLocal();
@@ -28,8 +58,8 @@ library Swap {
 
         if (context.tokenInRemote) {
             (seq, op) = seq.addCustodianOp(
-                Shared.RemoteOP_LockFunds,
-                abi.encode(Shared.TokenTransferOp(tokenRemote.tokenAddr, seq.initiator, context.amountIn))
+                Constants.RemoteOP_LockFunds,
+                abi.encode(TokenTransferOp(tokenRemote.tokenAddr, seq.initiator, context.amountIn))
             );
         } else {
             TransferHelper.safeTransferFrom(
@@ -39,8 +69,8 @@ library Swap {
                 0, context.amountOut, context.to, new bytes(0)
             );
             (seq, op) = seq.addCustodianOp(
-                Shared.RemoteOP_ReleaseFunds,
-                abi.encode(Shared.TokenTransferOp(tokenRemote.tokenAddr, seq.initiator, tokenRemoteProxy.balanceOf(context.to)))
+                Constants.RemoteOP_ReleaseFunds,
+                abi.encode(TokenTransferOp(tokenRemote.tokenAddr, seq.initiator, tokenRemoteProxy.balanceOf(context.to)))
 
             );
         }
