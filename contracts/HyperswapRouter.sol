@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {console2 as console} from "forge-std/Test.sol";
-import {Router as BridgeRouter} from "@abacus-network/app/contracts/Router.sol";
 import {Context} from "@openzeppelin/contracts/utils/Context.sol";
 
 import {IHyperswapFactory} from "./interfaces/IHyperswapFactory.sol";
@@ -15,10 +13,13 @@ import {Token, HyperswapToken, HyperswapLibrary} from "./libraries/HyperswapLibr
 import {TransferHelper} from "./libraries/TransferHelper.sol";
 import {SequenceLib} from "./libraries/SequenceLib.sol";
 
-import {HyperswapFactory} from "./HyperswapFactory.sol";
-import {HyperswapConstants} from "./HyperswapConstants.sol";
+import {AddLiquidity} from "./libraries/AddLiquidity.sol";
+import {RemoveLiquidity} from "./libraries/RemoveLiquidity.sol";
+import {Swap} from "./libraries/Swap.sol";
 
-contract HyperswapRouter is IHyperswapRouter, Context, HyperswapConstants {
+import {Shared} from "./libraries/Shared.sol";
+
+contract HyperswapRouter is IHyperswapRouter, Context {
     using HyperswapToken for Token;
     using SequenceLib for SequenceLib.Sequence;
 
@@ -36,38 +37,6 @@ contract HyperswapRouter is IHyperswapRouter, Context, HyperswapConstants {
 
     mapping(bytes32 => SequenceLib.Sequence) public sequences;
     mapping(bytes32 => SequenceLib.CustodianOperation[]) public sequenceOps;
-
-    struct TokenTransferOp {
-        address token;
-        address user;
-        uint256 amount;
-    }
-
-    struct AddLiquidityContext {
-        uint256 amountLocalDesired;
-        uint256 amountLocalMin;
-        uint256 amountRemoteDesired;
-        uint256 amountRemoteMin;
-        uint256 lpTokensMinted;
-        address to;
-    }
-
-    struct RemoveLiquidityContext {
-        uint256 amountLocalMin;
-        uint256 amountRemoteMin;
-        uint256 amountLocal;
-        uint256 amountRemote;
-        uint256 lpTokens;
-        address to;
-    }
-
-    struct SwapContext {
-        bool tokenInRemote;
-        uint256 amountIn;
-        uint256 amountOut;
-        address to;
-    }
-
 
     modifier ensure(uint256 deadline) {
         require(deadline >= block.timestamp, "HyperswapRouter: EXPIRED");
@@ -107,18 +76,44 @@ contract HyperswapRouter is IHyperswapRouter, Context, HyperswapConstants {
         if (seq.stage != stageBefore) {
             emit SequenceTransitioned(seqId, seq.stage);
         }
-        if (seq.seqType == Seq_AddLiquidity) {
-            seq = _sequenceTransition_addLiquidity(seqId, seq);
-        } else if (seq.seqType == Seq_RemoveLiquidity) {
-            seq = _sequenceTransition_removeLiquidity(seqId, seq);
-        } else if (seq.seqType == Seq_Swap) {
-            seq = _sequenceTransition_swap(seqId, seq);
+
+        seq = _sequenceTransition(seqId, seq);
+        sequences[seqId] = seq;
+        sequenceOps[seqId][opIndex] = op;
+    }
+
+    function _sequenceTransition(bytes32 seqId, SequenceLib.Sequence memory seq) internal returns (SequenceLib.Sequence memory) {
+        if (!seq.canTransition()) return seq;
+        SequenceLib.CustodianOperation memory nextOp;
+        if (seq.seqType == Shared.Seq_AddLiquidity) {
+            if (seq.stage == 1) {
+                (seq, nextOp) = AddLiquidity.stage1(seq);
+            } else if (seq.stage == 2) {
+                (seq, nextOp) = AddLiquidity.stage2(seq);
+            } else if (seq.stage == 3) {
+                seq = AddLiquidity.stage3(seq, sequenceOps[seqId][1]);
+            }
+        } else if (seq.seqType == Shared.Seq_RemoveLiquidity) {
+            if (seq.stage == 1) {
+                (seq, nextOp) = RemoveLiquidity.stage1(seq);
+            } else if (seq.stage == 2) {
+                seq = RemoveLiquidity.stage2(seq, sequenceOps[seqId][0]);
+            }
+        } else if (seq.seqType == Shared.Seq_Swap) {
+            if (seq.stage == 1) {
+                (seq, nextOp) = Swap.stage1(seq);
+            } else if (seq.stage == 2) {
+                seq = Swap.stage2(seq);
+            }
         } else {
             revert("SeqTransition not defined");
         }
 
-        sequences[seqId] = seq;
-        sequenceOps[seqId][opIndex] = op;
+        if (nextOp.opType != 0) {
+            _dispatchCustodianOp(IHyperswapPair(seq.pair).getTokenRemote().domainID, seqId, seq, nextOp);
+        }
+
+        return seq;
     }
 
 
@@ -142,7 +137,8 @@ contract HyperswapRouter is IHyperswapRouter, Context, HyperswapConstants {
 
         SequenceLib.Sequence memory seq;
         if (isLocal(tokenA)) {
-            (seqId, seq) = createSequence_addLiquidity(
+            (seqId, seq) = AddLiquidity.createSequence(
+                nonce++,
                 pair,
                 amountADesired,
                 amountBDesired,
@@ -151,7 +147,8 @@ contract HyperswapRouter is IHyperswapRouter, Context, HyperswapConstants {
                 to
             );
         } else {
-            (seqId, seq) = createSequence_addLiquidity(
+            (seqId, seq) = AddLiquidity.createSequence(
+                nonce++,
                 pair,
                 amountADesired,
                 amountBDesired,
@@ -161,137 +158,9 @@ contract HyperswapRouter is IHyperswapRouter, Context, HyperswapConstants {
             );
         }
 
-        seq = _sequenceTransition_addLiquidity(seqId, seq);
-        sequences[seqId] = seq; 
+        sequences[seqId] = _sequenceTransition(seqId, seq);
     }
 
-
-    function _sequenceTransition_addLiquidity(bytes32 seqId, SequenceLib.Sequence memory seq) internal returns (SequenceLib.Sequence memory){
-        if (!seq.canTransition()) return seq;
-        if (seq.stage == 1) {
-            seq = addLiquidity_stage1(seqId, seq);
-        } else if (seq.stage == 2) {
-            seq = addLiquidity_stage2(seqId, seq);
-        } else if (seq.stage == 3) {
-            seq = addLiquidity_stage3(seqId, seq);
-        }
-        return seq;
-    }
-
-    function addLiquidity_stage1(bytes32 seqId, SequenceLib.Sequence memory seq) internal returns (SequenceLib.Sequence memory) {
-        AddLiquidityContext memory context = abi.decode(seq.context, (AddLiquidityContext));
-        Token memory tokenLocal =  IHyperswapPair(seq.pair).getTokenLocal();
-        Token memory tokenRemote =  IHyperswapPair(seq.pair).getTokenRemote();
-        // Escrow funds locally
-        TransferHelper.safeTransferFrom(tokenLocal.tokenAddr, seq.initiator, address(this), context.amountLocalDesired);
-        seq = _dispatchCustodianOp(
-            seqId, 
-            seq, 
-            RemoteOP_LockFunds,
-            abi.encode(TokenTransferOp(tokenRemote.tokenAddr, seq.initiator, context.amountRemoteDesired)),
-            tokenRemote.domainID
-        );
-        seq.queuedStage = 2;
-        return seq;
-    }
-
-
-    function addLiquidity_stage2(bytes32 seqId, SequenceLib.Sequence memory seq) internal returns (SequenceLib.Sequence memory) {
-        AddLiquidityContext memory context = abi.decode(seq.context, (AddLiquidityContext));
-        Token memory tokenLocal =  IHyperswapPair(seq.pair).getTokenLocal();
-        Token memory tokenRemote =  IHyperswapPair(seq.pair).getTokenRemote();
-        IERC20 tokenRemoteProxy = IERC20(IHyperswapPair(seq.pair).tokenRemoteProxy());
-
-        tokenRemoteProxy.mint(context.to, context.amountRemoteDesired);
-
-        (uint256 amountLocal, uint256 amountRemote) = _getAddLiquidityAmounts(
-            tokenLocal, 
-            tokenRemote, 
-            context.amountLocalDesired, 
-            context.amountRemoteDesired, 
-            context.amountLocalMin, 
-            context.amountRemoteMin
-        );
-        TransferHelper.safeTransfer(tokenLocal.tokenAddr, seq.pair, amountLocal);
-        if (amountLocal < context.amountLocalDesired) {
-            TransferHelper.safeTransferFrom(tokenLocal.tokenAddr, address(this), seq.initiator, context.amountLocalDesired - amountLocal);
-        }
-
-        TransferHelper.safeTransferFrom(address(tokenRemoteProxy), seq.initiator, seq.pair, amountRemote);
-        if (tokenRemoteProxy.balanceOf(seq.initiator) > 0) {
-            seq = _dispatchCustodianOp(
-                seqId,
-                seq,
-                RemoteOP_ReleaseFunds,
-                abi.encode(TokenTransferOp(tokenRemote.tokenAddr, seq.initiator, tokenRemoteProxy.balanceOf(seq.initiator))),
-                tokenRemote.domainID
-            );
-        }
-
-        uint256 liquidity = IHyperswapPair(seq.pair).mint(context.to);
-        context.lpTokensMinted = liquidity;
-
-        seq.context = abi.encode(context);
-        seq.queuedStage = 3;
-        return seq;
-    }
-
-    function addLiquidity_stage3(bytes32 seqId, SequenceLib.Sequence memory seq) internal returns (SequenceLib.Sequence memory) {
-        TokenTransferOp memory op = abi.decode(sequenceOps[seqId][1].payload, (TokenTransferOp));
-        IERC20 tokenRemoteProxy = IERC20(IHyperswapPair(seq.pair).tokenRemoteProxy());
-        tokenRemoteProxy.burn(seq.initiator, op.amount);
-        return seq;
-    }
-
-    function createSequence_addLiquidity(
-        address pair,
-        uint256 amountLocalDesired,
-        uint256 amountRemoteDesired,
-        uint256 amountLocalMin,
-        uint256 amountRemoteMin,
-        address to
-    ) internal returns (bytes32 seqId, SequenceLib.Sequence memory seq) {
-        return _createSequence(
-            pair,
-            Seq_AddLiquidity,
-            abi.encode(
-                AddLiquidityContext(
-                    amountLocalDesired,
-                    amountLocalMin, 
-                    amountRemoteDesired, 
-                    amountRemoteMin, 
-                    0,
-                    to
-                )
-            )
-        );
-    }
-
-    function _getAddLiquidityAmounts(
-        Token memory tokenA,
-        Token memory tokenB,
-        uint256 amountADesired,
-        uint256 amountBDesired,
-        uint256 amountAMin,
-        uint256 amountBMin
-    ) internal virtual returns (uint256 amountA, uint256 amountB) {
-        // create the pair if it doesn"t exist yet
-        (uint256 reserveA, uint256 reserveB) = HyperswapLibrary.getReserves(factory, tokenA, tokenB);
-        if (reserveA == 0 && reserveB == 0) {
-            (amountA, amountB) = (amountADesired, amountBDesired);
-        } else {
-            uint256 amountBOptimal = HyperswapLibrary.quote(amountADesired, reserveA, reserveB);
-            if (amountBOptimal <= amountBDesired) {
-                require(amountBOptimal >= amountBMin, "HyperswapRouter: INSUFFICIENT_B_AMOUNT");
-                (amountA, amountB) = (amountADesired, amountBOptimal);
-            } else {
-                uint256 amountAOptimal = HyperswapLibrary.quote(amountBDesired, reserveB, reserveA);
-                assert(amountAOptimal <= amountADesired);
-                require(amountAOptimal >= amountAMin, "HyperswapRouter: INSUFFICIENT_A_AMOUNT");
-                (amountA, amountB) = (amountAOptimal, amountBDesired);
-            }
-        }
-    }
 
     // **** REMOVE LIQUIDITY ****
     function removeLiquidity(
@@ -308,7 +177,8 @@ contract HyperswapRouter is IHyperswapRouter, Context, HyperswapConstants {
 
         SequenceLib.Sequence memory seq;
         if (isLocal(tokenA)) {
-            (seqId, seq) = createSequence_removeLiquidity(
+            (seqId, seq) = RemoveLiquidity.createSequence(
+                nonce++,
                 pair,
                 amountAMin,
                 amountBMin,
@@ -316,7 +186,8 @@ contract HyperswapRouter is IHyperswapRouter, Context, HyperswapConstants {
                 to
             );
         } else {
-            (seqId, seq) = createSequence_removeLiquidity(
+            (seqId, seq) = RemoveLiquidity.createSequence(
+                nonce++,
                 pair,
                 amountAMin,
                 amountBMin,
@@ -325,17 +196,9 @@ contract HyperswapRouter is IHyperswapRouter, Context, HyperswapConstants {
             );
         }
 
-        seq = _sequenceTransition_removeLiquidity(seqId, seq);
-        sequences[seqId] = seq; 
-
-        // address pair = HyperswapLibrary.pairFor(factory, tokenA, tokenB);
-        // IHyperswapPair(pair).transferFrom(msg.sender, pair, liquidity); // send liquidity to pair
-        // (uint256 amount0, uint256 amount1) = IHyperswapPair(pair).burn(to);
-        // (Token memory token0,) = HyperswapLibrary.sortTokens(tokenA, tokenB);
-        // (amountA, amountB) = tokenA.eq(token0) ? (amount0, amount1) : (amount1, amount0);
-        // require(amountA >= amountAMin, "HyperswapRouter: INSUFFICIENT_A_AMOUNT");
-        // require(amountB >= amountBMin, "HyperswapRouter: INSUFFICIENT_B_AMOUNT");
+        sequences[seqId] = _sequenceTransition(seqId, seq);
     }
+
     function removeLiquidityWithPermit(
         Token calldata tokenA,
         Token calldata tokenB,
@@ -352,164 +215,27 @@ contract HyperswapRouter is IHyperswapRouter, Context, HyperswapConstants {
         return removeLiquidity(tokenA, tokenB, liquidity, amountAMin, amountBMin, to, deadline);
     }
 
-    function _sequenceTransition_removeLiquidity(bytes32 seqId, SequenceLib.Sequence memory seq) internal returns (SequenceLib.Sequence memory){
-        if (!seq.canTransition()) return seq;
-        if (seq.stage == 1) {
-            seq = removeLiquidity_stage1(seqId, seq);
-        } else if (seq.stage == 2) {
-            seq = removeLiquidity_stage2(seqId, seq);
-        }
-        return seq;
-    }
-
-    function removeLiquidity_stage1(bytes32 seqId, SequenceLib.Sequence memory seq) internal returns (SequenceLib.Sequence memory) {
-        RemoveLiquidityContext memory context = abi.decode(seq.context, (RemoveLiquidityContext));
-        Token memory tokenRemote =  IHyperswapPair(seq.pair).getTokenRemote();
-        IERC20 tokenRemoteProxy = IERC20(IHyperswapPair(seq.pair).tokenRemoteProxy());
-
-        IHyperswapPair(seq.pair).transferFrom(seq.initiator, seq.pair, context.lpTokens); // send liquidity to pair
-        (uint256 amountLocal, uint256 amountRemote) = IHyperswapPair(seq.pair).burn(context.to);
-        // (Token memory token0,) = HyperswapLibrary.sortTokens(tokenA, tokenB);
-        require(amountLocal >= context.amountLocalMin, "HyperswapRouter: INSUFFICIENT_A_AMOUNT");
-        require(amountRemote >= context.amountRemoteMin, "HyperswapRouter: INSUFFICIENT_A_AMOUNT");
-        // Escrow funds locally
-        // TransferHelper.safeTransferFrom(tokenLocal.tokenAddr, seq.initiator, address(this), context.amountLocalDesired);
-        seq = _dispatchCustodianOp(
-            seqId, 
-            seq, 
-            RemoteOP_ReleaseFunds,
-            abi.encode(TokenTransferOp(tokenRemote.tokenAddr, seq.initiator, tokenRemoteProxy.balanceOf(context.to))),
-            tokenRemote.domainID
-        );
-        seq.queuedStage = 2;
-        return seq;
-    }
-
-    function removeLiquidity_stage2(bytes32 seqId, SequenceLib.Sequence memory seq) internal returns (SequenceLib.Sequence memory) {
-        TokenTransferOp memory op = abi.decode(sequenceOps[seqId][0].payload, (TokenTransferOp));
-        IERC20 tokenRemoteProxy = IERC20(IHyperswapPair(seq.pair).tokenRemoteProxy());
-        tokenRemoteProxy.burn(seq.initiator, op.amount);
-        return seq;
-    }
-
-
-
-    function createSequence_removeLiquidity(
-        address pair,
-        uint256 amountLocalMin,
-        uint256 amountRemoteMin,
-        uint256 lpTokens,
-        address to
-    ) internal returns (bytes32 seqId, SequenceLib.Sequence memory seq) {
-        return _createSequence(
-            pair,
-            Seq_RemoveLiquidity,
-            abi.encode(
-                RemoveLiquidityContext(
-                    amountLocalMin, 
-                    amountRemoteMin, 
-                    0,
-                    0,
-                    lpTokens,
-                    to
-                )
-            )
-        );
-    }
 
     // **** SWAP ****
     function _swap(uint256[] memory amounts, Token[] memory path, address _to) internal virtual returns (bytes32 seqId) {
         // XXX: Currently support only 1:1 token swaps, no routing, path.length is always 2
         address pair = IHyperswapFactory(factory).getPair(path[0], path[1]);
         SequenceLib.Sequence memory seq;
-        (seqId, seq) = _createSequence(
+        (seqId, seq) = Shared.createSequence(
             pair,
-            Seq_Swap,
+            Shared.Seq_Swap,
             abi.encode(
-                SwapContext(
+                Swap.Context(
                     !isLocal(path[0]),
                     amounts[0],
                     amounts[1],
                     _to
                 )
-            )
+            ),
+            nonce++
         );
 
-        seq = _sequenceTransition_swap(seqId, seq);
-        sequences[seqId] = seq; 
-
-        // TransferHelper.safeTransferFrom(
-        //     path[0].tokenAddr, msg.sender, HyperswapLibrary.pairFor(factory, path[0], path[1]), amounts[0]
-        // );
-        /// (Token memory input, Token memory output) = (path[0], path[1]);
-        /// (Token memory token0,) = HyperswapLibrary.sortTokens(input, output);
-        /// uint256 amountOut = amounts[1];
-        /// uint256 amountIn
-        /// (uint256 amount0Out, uint256 amount1Out) = input.eq(token0) ? (uint(0), amountOut) : (amountOut, uint(0));
-        /// IHyperswapPair(HyperswapLibrary.pairFor(factory, input, output)).swap(
-        ///     amount0Out, amount1Out, _to, new bytes(0)
-        /// );
-    }
-
-    function _sequenceTransition_swap(bytes32 seqId, SequenceLib.Sequence memory seq) internal returns (SequenceLib.Sequence memory){
-        if (!seq.canTransition()) return seq;
-        if (seq.stage == 1) {
-            seq = swap_stage1(seqId, seq);
-        } else if (seq.stage == 2) {
-            seq = swap_stage2(seqId, seq);
-        }
-        return seq;
-    }
-
-    function swap_stage1(bytes32 seqId, SequenceLib.Sequence memory seq) internal returns (SequenceLib.Sequence memory) {
-        SwapContext memory context = abi.decode(seq.context, (SwapContext));
-        Token memory tokenLocal =  IHyperswapPair(seq.pair).getTokenLocal();
-        Token memory tokenRemote =  IHyperswapPair(seq.pair).getTokenRemote();
-        IERC20 tokenRemoteProxy = IERC20(IHyperswapPair(seq.pair).tokenRemoteProxy());
-
-        if (context.tokenInRemote) {
-            seq = _dispatchCustodianOp(
-                seqId, 
-                seq, 
-                RemoteOP_LockFunds,
-                abi.encode(TokenTransferOp(tokenRemote.tokenAddr, seq.initiator, context.amountIn)),
-                tokenRemote.domainID
-            );
-        } else {
-            TransferHelper.safeTransferFrom(
-                tokenLocal.tokenAddr, msg.sender, seq.pair, context.amountIn
-            );
-            IHyperswapPair(seq.pair).swap(
-                0, context.amountOut, context.to, new bytes(0)
-            );
-            seq = _dispatchCustodianOp(
-                seqId, 
-                seq, 
-                RemoteOP_ReleaseFunds,
-                abi.encode(TokenTransferOp(tokenRemote.tokenAddr, seq.initiator, tokenRemoteProxy.balanceOf(context.to))),
-                tokenRemote.domainID
-            );
-        }
-
-        seq.queuedStage = 2;
-        return seq;
-    }
-
-    function swap_stage2(bytes32 seqId, SequenceLib.Sequence memory seq) internal returns (SequenceLib.Sequence memory) {
-        SwapContext memory context = abi.decode(seq.context, (SwapContext));
-        IERC20 tokenRemoteProxy = IERC20(IHyperswapPair(seq.pair).tokenRemoteProxy());
-
-        if (context.tokenInRemote) {
-            tokenRemoteProxy.mint(seq.pair, context.amountIn);
-            IHyperswapPair(seq.pair).swap(
-                context.amountOut, 0, context.to, new bytes(0)
-            );
-        } else {
-            tokenRemoteProxy.burn(context.to, context.amountOut);
-        }
-
-        // Sequence ends here.
-        return seq;
+        sequences[seqId] = _sequenceTransition(seqId, seq);
     }
 
     function swapExactTokensForTokens(
@@ -552,19 +278,11 @@ contract HyperswapRouter is IHyperswapRouter, Context, HyperswapConstants {
 
     // **** LIBRARY FUNCTIONS ****
 
-    function _createSequence(address pair, uint8 seqType, bytes memory context) internal returns (bytes32 seqId, SequenceLib.Sequence memory seq) {
-        seq = SequenceLib.create(seqType, pair, msg.sender, context);
-        seqId = keccak256(abi.encode(block.number, seq.initiator, seq.pair, nonce++));
-        emit SequenceCreated(seqId, seq.pair, seq.initiator);
-    }
-
-    function _dispatchCustodianOp(bytes32 seqId, SequenceLib.Sequence memory seq, uint8 opType, bytes memory payload, uint32 targetDomain) internal returns (SequenceLib.Sequence memory) {
-        SequenceLib.CustodianOperation memory op;
-        (seq, op) = seq.addCustodianOp(opType, payload);
+    function _dispatchCustodianOp(uint32 remoteDomain, bytes32 seqId, SequenceLib.Sequence memory seq, SequenceLib.CustodianOperation memory op) internal returns (SequenceLib.Sequence memory) {
         sequenceOps[seqId].push(op);
         uint256 opIndex = sequenceOps[seqId].length - 1;
-        emit CustodianOpQueued(seqId, opIndex, targetDomain, opType);
-        IHyperswapBridgeRouter(bridgeRouter).callCustodian(targetDomain, seqId, opIndex, opType, payload);
+        emit CustodianOpQueued(seqId, opIndex, remoteDomain, op.opType);
+        IHyperswapBridgeRouter(bridgeRouter).callCustodian(remoteDomain, seqId, opIndex, op.opType, op.payload);
         return seq;
     }
 

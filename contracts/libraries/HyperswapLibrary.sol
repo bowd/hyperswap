@@ -59,6 +59,12 @@ library HyperswapLibrary {
         (reserveA, reserveB) = (tokenA.domainID == token0.domainID && tokenA.tokenAddr == token0.tokenAddr) ? (reserve0, reserve1) : (reserve1, reserve0);
     }
 
+    function getReservesForPair(address pair, Token memory tokenA, Token memory tokenB) internal view returns (uint reserveA, uint reserveB) {
+        (Token memory token0,) = sortTokens(tokenA, tokenB);
+        (uint reserve0, uint reserve1,) = IHyperswapPair(pair).getReserves();
+        (reserveA, reserveB) = (tokenA.domainID == token0.domainID && tokenA.tokenAddr == token0.tokenAddr) ? (reserve0, reserve1) : (reserve1, reserve0);
+    }
+
     // given some amount of an asset and pair reserves, returns an equivalent amount of the other asset
     function quote(uint amountA, uint reserveA, uint reserveB) internal pure returns (uint amountB) {
         require(amountA > 0, "HyperswapLibrary: INSUFFICIENT_AMOUNT");
