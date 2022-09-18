@@ -41,7 +41,7 @@ export class HyperswapDeployer<
     const router = await this.deployContract(chain, 'router', []);
     console.log("as1")
     console.log(router.address)
-    const hyperswapRouter = await this.deployContract(chain, 'hyperswapRouter', [config.owner, router.address, localDomain]) as HyperswapRouter;
+    const hyperswapRouter = await this.deployContract(chain, 'hyperswapRouter', [router.address, localDomain]) as HyperswapRouter;
     console.log("as2")
     const hyperswapCustodian = await this.deployContract(chain, 'hyperswapCustodian', [router.address]) as HyperswapCustodian;
     console.log("as3")

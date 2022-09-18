@@ -20,7 +20,7 @@ library Swap {
         address to;
     }
 
-    function stage1(SequenceLib.Sequence memory seq) internal returns (SequenceLib.Sequence memory, SequenceLib.CustodianOperation memory op) {
+    function stage1(SequenceLib.Sequence memory seq) public returns (SequenceLib.Sequence memory, SequenceLib.CustodianOperation memory op) {
         Context memory context = abi.decode(seq.context, (Context));
         Token memory tokenLocal =  IHyperswapPair(seq.pair).getTokenLocal();
         Token memory tokenRemote =  IHyperswapPair(seq.pair).getTokenRemote();
@@ -49,7 +49,7 @@ library Swap {
         return (seq, op);
     }
 
-    function stage2(SequenceLib.Sequence memory seq) internal returns (SequenceLib.Sequence memory) {
+    function stage2(SequenceLib.Sequence memory seq) public returns (SequenceLib.Sequence memory) {
         Context memory context = abi.decode(seq.context, (Context));
         IERC20 tokenRemoteProxy = IERC20(IHyperswapPair(seq.pair).tokenRemoteProxy());
 

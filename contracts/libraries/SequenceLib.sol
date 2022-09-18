@@ -22,7 +22,7 @@ library SequenceLib {
         uint32 queuedStage;
     }
 
-    function create(uint8 seqType, address pair, address initiator, bytes memory context) internal pure returns (Sequence memory) {
+    function create(uint8 seqType, address pair, address initiator, bytes memory context) public pure returns (Sequence memory) {
         return Sequence(
             seqType,
             pair,
@@ -36,11 +36,11 @@ library SequenceLib {
         );
     }
 
-    function hasPendingCustodianOps(Sequence memory self) internal pure returns (bool) {
+    function hasPendingCustodianOps(Sequence memory self) public pure returns (bool) {
         return self.remoteOpsFinished < self.remoteOpsQueued;
     }
 
-    function canTransition(Sequence memory self) internal pure returns (bool) {
+    function canTransition(Sequence memory self) public pure returns (bool) {
         return self.queuedStage == self.stage && self.remoteOpsFailed == 0;
     }
 
@@ -48,7 +48,7 @@ library SequenceLib {
         return self.remoteOpsFinished < self.remoteOpsQueued || self.remoteOpsFailed > 0 ? self.stage : self.queuedStage;
     }
 
-    function addCustodianOp(Sequence memory self, uint8 opType, bytes memory payload) internal view returns (Sequence memory, CustodianOperation memory) {
+    function addCustodianOp(Sequence memory self, uint8 opType, bytes memory payload) public view returns (Sequence memory, CustodianOperation memory) {
         CustodianOperation memory remoteOp = CustodianOperation(
             opType,
             block.timestamp + 1000000, // TODO: What should the deadline be / how should it play in?
@@ -60,7 +60,7 @@ library SequenceLib {
         return (self, remoteOp);
     }
 
-    function finishCustodianOp(Sequence memory self, CustodianOperation memory remoteOp, bool success) internal pure returns (Sequence memory, CustodianOperation memory) {
+    function finishCustodianOp(Sequence memory self, CustodianOperation memory remoteOp, bool success) public pure returns (Sequence memory, CustodianOperation memory) {
         remoteOp.completed = true;
         remoteOp.succeeded = success;
 

@@ -12,15 +12,15 @@ struct Token {
 }
 
 library HyperswapToken {
-    function id(Token memory self) internal pure returns (bytes32) {
+    function id(Token memory self) external pure returns (bytes32) {
         return bytes32(uint256(self.domainID) * 2**224 + uint160(self.tokenAddr));
     }
 
-    function eq(Token memory self, Token memory other) internal pure returns (bool) {
+    function eq(Token memory self, Token memory other) external pure returns (bool) {
         return (self.domainID == other.domainID) && (self.tokenAddr == other.tokenAddr);
     }
 
-    function lt(Token memory self, Token memory other) internal pure returns (bool) {
+    function lt(Token memory self, Token memory other) external pure returns (bool) {
         if (self.domainID < other.domainID) {
             return true;
         } else if (self.domainID > other.domainID) {
@@ -34,13 +34,13 @@ library HyperswapToken {
 library HyperswapLibrary {
     using HyperswapToken for Token;
     // returns sorted token addresses, used to handle return values from pairs sorted in this order
-    function sortTokens(Token memory tokenA, Token memory tokenB) internal pure returns (Token memory token0, Token memory token1) {
+    function sortTokens(Token memory tokenA, Token memory tokenB) public pure returns (Token memory token0, Token memory token1) {
         (token0, token1) = tokenA.lt(tokenB) ? (tokenA, tokenB) : (tokenB, tokenA);
         require(token0.tokenAddr != address(0), "HyperswapLibrary: ZERO_ADDRESS");
     }
 
     // calculates the CREATE2 address for a pair without making any external calls
-    function pairFor(address factory, Token memory tokenA, Token memory tokenB) internal pure returns (address pair) {
+    function pairFor(address factory, Token memory tokenA, Token memory tokenB) public pure returns (address pair) {
         (Token memory token0, Token memory token1) = sortTokens(tokenA, tokenB);
         pair = address(uint160(uint(keccak256(abi.encodePacked(
                 hex"ff",
@@ -52,28 +52,28 @@ library HyperswapLibrary {
     }
 
     // fetches and sorts the reserves for a pair
-    function getReserves(address factory, Token memory tokenA, Token memory tokenB) internal view returns (uint reserveA, uint reserveB) {
+    function getReserves(address factory, Token memory tokenA, Token memory tokenB) public view returns (uint reserveA, uint reserveB) {
         (Token memory token0,) = sortTokens(tokenA, tokenB);
         console.log(pairFor(factory, tokenA, tokenB));
         (uint reserve0, uint reserve1,) = IHyperswapPair(pairFor(factory, tokenA, tokenB)).getReserves();
         (reserveA, reserveB) = (tokenA.domainID == token0.domainID && tokenA.tokenAddr == token0.tokenAddr) ? (reserve0, reserve1) : (reserve1, reserve0);
     }
 
-    function getReservesForPair(address pair, Token memory tokenA, Token memory tokenB) internal view returns (uint reserveA, uint reserveB) {
+    function getReservesForPair(address pair, Token memory tokenA, Token memory tokenB) external view returns (uint reserveA, uint reserveB) {
         (Token memory token0,) = sortTokens(tokenA, tokenB);
         (uint reserve0, uint reserve1,) = IHyperswapPair(pair).getReserves();
         (reserveA, reserveB) = (tokenA.domainID == token0.domainID && tokenA.tokenAddr == token0.tokenAddr) ? (reserve0, reserve1) : (reserve1, reserve0);
     }
 
     // given some amount of an asset and pair reserves, returns an equivalent amount of the other asset
-    function quote(uint amountA, uint reserveA, uint reserveB) internal pure returns (uint amountB) {
+    function quote(uint amountA, uint reserveA, uint reserveB) external pure returns (uint amountB) {
         require(amountA > 0, "HyperswapLibrary: INSUFFICIENT_AMOUNT");
         require(reserveA > 0 && reserveB > 0, "HyperswapLibrary: INSUFFICIENT_LIQUIDITY");
         amountB = (amountA * reserveB) / reserveA;
     }
 
     // given an input amount of an asset and pair reserves, returns the maximum output amount of the other asset
-    function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) internal pure returns (uint amountOut) {
+    function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) public pure returns (uint amountOut) {
         require(amountIn > 0, "HyperswapLibrary: INSUFFICIENT_INPUT_AMOUNT");
         require(reserveIn > 0 && reserveOut > 0, "HyperswapLibrary: INSUFFICIENT_LIQUIDITY");
         uint amountInWithFee = amountIn * 997;
@@ -83,7 +83,7 @@ library HyperswapLibrary {
     }
 
     // given an output amount of an asset and pair reserves, returns a required input amount of the other asset
-    function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut) internal pure returns (uint amountIn) {
+    function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut) public pure returns (uint amountIn) {
         require(amountOut > 0, "HyperswapLibrary: INSUFFICIENT_OUTPUT_AMOUNT");
         require(reserveIn > 0 && reserveOut > 0, "HyperswapLibrary: INSUFFICIENT_LIQUIDITY");
         uint numerator = (reserveIn * amountOut) * 1000;
@@ -92,7 +92,7 @@ library HyperswapLibrary {
     }
 
     // performs chained getAmountOut calculations on any number of pairs
-    function getAmountsOut(address factory, uint amountIn, Token[] memory path) internal view returns (uint[] memory amounts) {
+    function getAmountsOut(address factory, uint amountIn, Token[] memory path) external view returns (uint[] memory amounts) {
         require(path.length >= 2, "HyperswapLibrary: INVALID_PATH");
         amounts = new uint[](path.length);
         amounts[0] = amountIn;
@@ -103,7 +103,7 @@ library HyperswapLibrary {
     }
 
     // performs chained getAmountIn calculations on any number of pairs
-    function getAmountsIn(address factory, uint amountOut, Token[] memory path) internal view returns (uint[] memory amounts) {
+    function getAmountsIn(address factory, uint amountOut, Token[] memory path) external view returns (uint[] memory amounts) {
         require(path.length >= 2, "HyperswapLibrary: INVALID_PATH");
         amounts = new uint[](path.length);
         amounts[amounts.length - 1] = amountOut;

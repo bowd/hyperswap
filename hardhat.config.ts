@@ -41,10 +41,12 @@ module.exports = {
     compilers: [
       {
         version: '0.8.13',
-        optimizer: {
-          enabled: true,
-          runs: 10,
-        },
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 100,
+          },
+        }
       },
     ],
   },

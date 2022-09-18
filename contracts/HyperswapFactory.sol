@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import {IHyperswapFactory} from "./interfaces/IHyperswapFactory.sol";
 import {IHyperswapPair} from "./interfaces/IHyperswapPair.sol";
 import {HyperswapPair} from "./HyperswapPair.sol";
-import {Token, HyperswapToken, HyperswapLibrary} from "./libraries/HyperswapLibrary.sol";
+import {Token, HyperswapToken} from "./libraries/HyperswapLibrary.sol";
 import {IProxyTokenFactory} from "./interfaces/IProxyTokenFactory.sol";
 
 contract HyperswapFactory is IHyperswapFactory {

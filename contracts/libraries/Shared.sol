@@ -17,7 +17,7 @@ library Shared {
         uint256 amount;
     }
 
-    function createSequence(address pair, uint8 seqType, bytes memory context, uint256 nonce) internal view returns (bytes32 seqId, SequenceLib.Sequence memory seq) {
+    function createSequence(address pair, uint8 seqType, bytes memory context, uint256 nonce) public view returns (bytes32 seqId, SequenceLib.Sequence memory seq) {
         seq = SequenceLib.create(seqType, pair, msg.sender, context);
         seqId = keccak256(abi.encode(block.number, seq.initiator, seq.pair, nonce));
         // emit SequenceCreated(seqId, seq.pair, seq.initiator);
