@@ -1,6 +1,6 @@
-# Abacus 'Hello World' App Template
+# Hyperswap
 
-A basic Abacus application with a router contract that can dispatch messages.
+A permissionless cross-chain AMM based on UniswapV2 and [Hyperlane](https://hyperlane.xyz/).
 
 ## Setup
 

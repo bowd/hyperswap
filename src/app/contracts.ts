@@ -1,11 +1,10 @@
-import { RouterContracts, RouterFactories } from '@abacus-network/sdk';
-
-import { 
+import {
   HyperswapBridgeRouter,
   HyperswapBridgeRouter__factory,
   HyperswapCustodian,
   HyperswapRouter,
-} from '../types';
+} from "../types";
+import { RouterContracts, RouterFactories } from "@abacus-network/sdk";
 
 export type HyperswapFactories = RouterFactories<HyperswapBridgeRouter>;
 
@@ -14,6 +13,6 @@ export const hyperswapFactories: HyperswapFactories = {
 };
 
 export type HyperswapContracts = RouterContracts<HyperswapBridgeRouter> & {
-  hyperswapRouter: HyperswapRouter,
-  hyperswapCustodian: HyperswapCustodian
+  hyperswapRouter: HyperswapRouter;
+  hyperswapCustodian: HyperswapCustodian;
 };

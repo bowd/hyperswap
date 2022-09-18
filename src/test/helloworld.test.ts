@@ -1,7 +1,6 @@
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { expect } from 'chai';
-import { ethers } from 'hardhat';
-
+import { HyperswapConfig } from "../deploy/config";
+import { HyperswapDeployer } from "../deploy/deploy";
+import { HyperswapBridgeRouter } from "../types";
 import {
   ChainMap,
   ChainNameToDomainId,
@@ -12,15 +11,14 @@ import {
   getChainToOwnerMap,
   getTestMultiProvider,
   testChainConnectionConfigs,
-} from '@abacus-network/sdk';
+} from "@abacus-network/sdk";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { expect } from "chai";
+import { ethers } from "hardhat";
 
-import { HyperswapConfig } from '../deploy/config';
-import { HyperswapDeployer } from '../deploy/deploy';
-import { HyperswapBridgeRouter } from '../types';
-
-describe('HelloWorld', async () => {
-  const localChain = 'test1';
-  const remoteChain = 'test2';
+describe("HelloWorld", async () => {
+  const localChain = "test1";
+  const remoteChain = "test2";
   const localDomain = ChainNameToDomainId[localChain];
   const remoteDomain = ChainNameToDomainId[remoteChain];
 
@@ -40,7 +38,7 @@ describe('HelloWorld', async () => {
     const coreContractsMaps = await coreDeployer.deploy();
     coreApp = new TestCoreApp(coreContractsMaps, multiProvider);
     config = coreApp.extendWithConnectionClientConfig(
-      getChainToOwnerMap(testChainConnectionConfigs, signer.address),
+      getChainToOwnerMap(testChainConnectionConfigs, signer.address)
     );
   });
 
@@ -63,7 +61,7 @@ describe('HelloWorld', async () => {
     // expect(await remote.received()).to.equal(0);
   });
 
-  it('sends a message', async () => {
+  it("sends a message", async () => {
     // await expect(local.sendHelloWorld(remoteDomain, 'Hello')).to.emit(
     //   local,
     //   'SentHelloWorld',
@@ -75,7 +73,7 @@ describe('HelloWorld', async () => {
     // expect(await local.received()).to.equal(0);
   });
 
-  it('handles a message', async () => {
+  it("handles a message", async () => {
     // await local.sendHelloWorld(remoteDomain, 'World');
     // // Mock processing of the message by Abacus
     // await coreApp.processOutboundMessages(localChain);

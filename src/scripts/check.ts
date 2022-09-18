@@ -1,3 +1,7 @@
+import { HyperswapApp } from "../app/app";
+import { HyperswapContracts, hyperswapFactories } from "../app/contracts";
+import { HyperswapChecker } from "../deploy/check";
+import { prodConfigs } from "../deploy/config";
 import {
   AbacusCore,
   ChainMap,
@@ -6,21 +10,16 @@ import {
   buildContracts,
   getChainToOwnerMap,
   objMap,
-} from '@abacus-network/sdk';
-
-import { HyperswapApp } from '../app/app';
-import { HyperswapContracts, hyperswapFactories } from '../app/contracts';
-import { HyperswapChecker } from '../deploy/check';
-import { prodConfigs } from '../deploy/config';
+} from "@abacus-network/sdk";
 
 // COPY FROM OUTPUT OF DEPLOYMENT SCRIPT OR IMPORT FROM ELSEWHERE
 const deploymentAddresses = {};
 
 // SET CONTRACT OWNER ADDRESS HERE
-const ownerAddress = '0x123...';
+const ownerAddress = "0x123...";
 
 async function check() {
-  console.info('Preparing utilities');
+  console.info("Preparing utilities");
   const chainProviders = objMap(prodConfigs, (_, config) => ({
     provider: config.provider,
     confirmations: config.confirmations,
@@ -30,21 +29,21 @@ async function check() {
 
   const contractsMap = buildContracts(
     deploymentAddresses,
-    hyperswapFactories,
+    hyperswapFactories
   ) as ChainMap<ChainName, HyperswapContracts>;
 
-  const core = AbacusCore.fromEnvironment('testnet2', multiProvider);
+  const core = AbacusCore.fromEnvironment("testnet2", multiProvider);
   const app = new HyperswapApp(core, contractsMap, multiProvider);
   const config = core.extendWithConnectionClientConfig(
-    getChainToOwnerMap(prodConfigs, ownerAddress),
+    getChainToOwnerMap(prodConfigs, ownerAddress)
   );
 
-  console.info('Starting check');
+  console.info("Starting check");
   const hyperswapChecker = new HyperswapChecker(multiProvider, app, config);
   await hyperswapChecker.check();
   hyperswapChecker.expectEmpty();
 }
 
 check()
-  .then(() => console.info('Check complete'))
+  .then(() => console.info("Check complete"))
   .catch(console.error);

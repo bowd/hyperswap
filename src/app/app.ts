@@ -1,23 +1,21 @@
 // import { BigNumber, ethers } from 'ethers';
-
+// import { debug } from '@abacus-network/utils';
+import { HyperswapContracts } from "./contracts";
 import {
   AbacusApp,
   AbacusCore,
   ChainMap,
   ChainName,
   MultiProvider,
-} from '@abacus-network/sdk';
-// import { debug } from '@abacus-network/utils';
-
-import { HyperswapContracts } from './contracts';
+} from "@abacus-network/sdk";
 
 export class HyperswapApp<
-  Chain extends ChainName = ChainName,
+  Chain extends ChainName = ChainName
 > extends AbacusApp<HyperswapContracts, Chain> {
   constructor(
     public readonly core: AbacusCore<Chain>,
     contractsMap: ChainMap<Chain, HyperswapContracts>,
-    multiProvider: MultiProvider<Chain>,
+    multiProvider: MultiProvider<Chain>
   ) {
     super(contractsMap, multiProvider);
   }
